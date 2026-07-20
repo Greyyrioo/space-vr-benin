@@ -103,8 +103,6 @@ ZONES = {
     },
 }
 
-}
-
 FUEL_BAR_MENU = {
     "energy-drink": {"name": "Neon Surge Energy Drink", "price": 1500.00},
     "cola": {"name": "Ice-Cold Cola", "price": 1000.00},
