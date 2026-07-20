@@ -66,7 +66,7 @@ ZONES = {
     "vr-combat": {
         "name": "VR Combat Zone",
         "tagline": "Full-body tracked premium VR setups",
-        "price_per_hour": 15000.00,
+        "price_per_game": 3000.00,
         "games": [
             "Beat Saber", "Half-Life: Alyx", "Superhot VR",
             "Population: ONE", "Blade & Sorcery"
@@ -75,7 +75,7 @@ ZONES = {
     "racing-sim": {
         "name": "Racing Simulators",
         "tagline": "Force-feedback wheel rigs & motion seats",
-        "price_per_hour": 18000.00,
+        "price_per_game": 3000.00,
         "games": [
             "F1 23 Championship Rig", "Forza Motorsport",
             "Assetto Corsa Competizione", "Gran Turismo 7"
@@ -84,7 +84,7 @@ ZONES = {
     "ps5-hub": {
         "name": "PlayStation 5 Hub",
         "tagline": "Couch co-op and competitive gaming on the big screen",
-        "price_per_hour": 8000.00,
+        "price_per_game": 3000.00,
         "games": [
             "FIFA 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "Elden Ring"
         ],
@@ -92,15 +92,17 @@ ZONES = {
     "table-tennis": {
         "name": "Table Tennis Zone",
         "tagline": "Fast-paced table tennis action with friends",
-        "price_per_hour": 5000.00,
+        "price_per_game": 3000.00,
         "games": ["Singles Match", "Doubles Showdown"],
     },
     "drinks-bar": {
         "name": "Drinks Bar",
         "tagline": "Refreshments delivered straight to your station",
-        "price_per_hour": 0.00,
+        "price_per_game": 0.00,
         "games": [],
     },
+}
+
 }
 
 FUEL_BAR_MENU = {
@@ -121,8 +123,7 @@ BANK_DETAILS = {
     "reference_note": "Use your SVR booking reference as the transfer narration/description.",
 }
 
-DURATIONS_MIN = [30, 60, 90, 120]
-
+DURATIONS_MIN = [1, 2, 3, 4, 5]
 # ---------------------------------------------------------------------------
 # Database helpers
 # ---------------------------------------------------------------------------
@@ -407,8 +408,8 @@ def create_booking():
     if errors:
         return jsonify({"success": False, "errors": errors}), 400
 
-    zone = ZONES[zone_id]
-    zone_cost = round(zone["price_per_hour"] * (duration_min / 60.0), 2)
+        zone = ZONES[zone_id]
+    zone_cost = round(zone["price_per_game"] * int(duration_min), 2)
 
     resolved_drinks = []
     drinks_cost = 0.0

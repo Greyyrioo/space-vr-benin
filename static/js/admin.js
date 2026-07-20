@@ -56,7 +56,7 @@
 
   function renderStats(stats) {
     document.getElementById("statTotalBookings").textContent = stats.total_bookings;
-    document.getElementById("statRevenue").textContent = `$${stats.total_revenue.toFixed(2)}`;
+    document.getElementById("statRevenue").textContent = `₦${Number(stats.total_revenue || 0).toLocaleString()}`;
     document.getElementById("statAwaiting").textContent = stats.pending_verification;
     document.getElementById("statPendingPayment").textContent = stats.pending_payment;
   }
@@ -93,7 +93,7 @@
             <td>${b.duration_min} min</td>
             <td>${escapeHtml(b.session_date)}<br><span style="color:var(--text-faint); font-size:12px;">${escapeHtml(b.time_slot)}</span></td>
             <td class="drinks-cell">${drinksHtml}</td>
-            <td>$${b.total_cost.toFixed(2)}</td>
+            <td>₦${b.total_cost.toFixed(2)}</td>
             <td><span class="status-badge" style="${STATUS_COLORS[b.status] || ""}">${STATUS_LABELS[b.status] || b.status}</span></td>
             <td>
               <div class="row-actions">

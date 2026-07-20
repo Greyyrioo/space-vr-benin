@@ -240,22 +240,27 @@
         <div class="field full">
           <label>Zone</label>
           <select id="bookingZone" required>
-            <option value="">Select a zone…</option>
-            {% for zone_id, zone in zones.items() %}
-              {% if zone.price_per_hour > 0 %}
-                <option value="{{ zone_id }}" data-price="{{ zone.price_per_hour }}" data-name="{{ zone.name }}">{{ zone.name }} -- ₦{{ '{:,.0f}'.format(zone.price_per_hour) }}/hr</option>
-              {% endif %}
-            {% endfor %}
-          </select>
-        </div>
-        <div class="field">
-          <label>Duration</label>
-          <select id="bookingDuration" required>
-            {% for d in durations %}
-              <option value="{{ d }}">{{ d }} minutes</option>
-            {% endfor %}
-          </select>
-        </div>
+    <option value="">Select a zone...</option>
+    {% for zone_id, zone in zones.items() %}
+        {% if zone.price_per_game > 0 %}
+            <option value="{{ zone_id }}" data-price="{{ zone.price_per_game }}" data-name="{{ zone.name }}">{{ zone.name }} -- ₦{{ '{:,.0f}'.format(zone.price_per_game) }}/game</option>
+        {% endif %}
+    {% endfor %}
+</select>
+</div>
+
+<div class="field">
+    <label>Duration / Games</label>
+    <select id="bookingDuration" required>
+        <option value="1">1 Game (₦3,000)</option>
+        <option value="2">2 Games (₦6,000)</option>
+        <option value="3">3 Games (₦9,000)</option>
+        <option value="4">4 Games (₦12,000)</option>
+        <option value="5">5 Games (₦15,000)</option>
+    </select>
+</div>
+
+
         <div class="field">
           <label>Session Date</label>
           <input type="date" id="bookingDate" required />

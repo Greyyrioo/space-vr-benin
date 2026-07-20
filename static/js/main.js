@@ -102,7 +102,7 @@
           <div class="fuel-item" data-item-id="${itemId}">
             <div class="fuel-item-info">
               <div class="fuel-name">${escapeHtml(item.name)}</div>
-              <div class="fuel-price">$${item.price.toFixed(2)} each</div>
+              <div class="fuel-price">₦${item.price.toFixed(2)} each</div>
             </div>
             <div class="qty-control">
               <button type="button" class="qty-btn" data-action="dec">−</button>
@@ -148,7 +148,7 @@
   function updateFuelSubtotal() {
     const subtotalEl = document.getElementById("fuelSubtotal");
     if (!subtotalEl) return;
-    subtotalEl.textContent = `$${getDrinksTotal().toFixed(2)}`;
+    subtotalEl.textContent = `₦${getDrinksTotal().toFixed(2)}`;
   }
 
   function getDrinksTotal() {
@@ -240,14 +240,15 @@
     const durationMin = parseInt(durationSelect.value, 10) || 0;
     const zone = zoneId ? DATA.zones[zoneId] : null;
 
-    const zoneCost = zone ? zone.price_per_hour * (durationMin / 60) : 0;
+    const zoneCost = zone ? (zone.price_per_game || 3000) * durationMin : 0;
     const drinksCost = getDrinksTotal();
     const total = zoneCost + drinksCost;
 
-    document.getElementById("costZone").textContent = `$${zoneCost.toFixed(2)}`;
-    document.getElementById("costDrinks").textContent = `$${drinksCost.toFixed(2)}`;
-    document.getElementById("costTotal").textContent = `$${total.toFixed(2)}`;
-  }
+    document.getElementById('summaryZoneCost').textContent = `₦${zoneCost.toLocaleString()}`;
+    document.getElementById('summaryDrinksCost').textContent = `₦${drinksCost.toLocaleString()}`;
+    document.getElementById('summaryTotal').textContent = `₦${total.toLocaleString()}`;
+}
+
 
   function wireBookingFormSubmit() {
     const form = document.getElementById("bookingForm");
@@ -315,7 +316,7 @@
     document.getElementById("bankAccountName").textContent = bankDetails.account_name;
     document.getElementById("bankAccountNumber").textContent = bankDetails.account_number;
     document.getElementById("bankRoutingNumber").textContent = bankDetails.routing_number;
-    document.getElementById("checkoutTotal").textContent = `$${booking.total_cost.toFixed(2)}`;
+    document.getElementById("checkoutTotal").textContent = `₦${booking.total_cost.toFixed(2)}`;
     document.getElementById("checkoutInstructions").textContent =
       `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`;
   }
