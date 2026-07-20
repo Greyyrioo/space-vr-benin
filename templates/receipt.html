@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpaceVR — Digital Receipt</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+<div class="parallax-bg"></div>
+
+<nav class="navbar">
+  <a class="logo" href="/">SPACE<span>VR</span></a>
+</nav>
+
+<div class="receipt-page">
+  {% if booking %}
+  <div class="receipt-card">
+    <div class="receipt-header">
+      <div class="logo">SPACE<span>VR</span></div>
+      <div class="receipt-status status-{{ booking.status }}">
+        {{ booking.status.replace('_', ' ')|upper }}
+      </div>
+    </div>
+
+    <div class="receipt-row"><span class="label">Reference</span><span>{{ booking.ref_id }}</span></div>
+    <div class="receipt-row"><span class="label">Customer</span><span>{{ booking.customer_name }}</span></div>
+    <div class="receipt-row"><span class="label">Zone</span><span>{{ booking.zone_name }}</span></div>
+    <div class="receipt-row"><span class="label">Duration</span><span>{{ booking.duration_min }} minutes</span></div>
+    <div class="receipt-row"><span class="label">Date</span><span>{{ booking.session_date }}</span></div>
+    <div class="receipt-row"><span class="label">Time Slot</span><span>{{ booking.time_slot }}</span></div>
+
+    {% if booking.drinks and booking.drinks|length > 0 %}
+    <div class="receipt-section-title">Fuel Bar Items</div>
+    {% for d in booking.drinks %}
+    <div class="receipt-row"><span class="label">{{ d.qty }} × {{ d.name }}</span><span>${{ '%.2f'|format(d.line_total) }}</span></div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="receipt-section-title">Payment</div>
+    <div class="receipt-row"><span class="label">Zone Cost</span><span>${{ '%.2f'|format(booking.zone_cost) }}</span></div>
+    <div class="receipt-row"><span class="label">Fuel Bar Cost</span><span>${{ '%.2f'|format(booking.drinks_cost) }}</span></div>
+
+    <div class="receipt-total"><span>Total Due</span><span>${{ '%.2f'|format(booking.total_cost) }}</span></div>
+
+    <div class="receipt-note">
+      Bring a screenshot of this receipt or your transfer confirmation to the
+      office counter to activate your pod. Your reference code is
+      <strong>{{ booking.ref_id }}</strong>.
+    </div>
+
+    <div style="margin-top:26px; display:flex; gap:14px; flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="window.print()">Print / Save PDF</button>
+      <a href="/" class="btn btn-primary">Back to SpaceVR</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="receipt-card" style="text-align:center;">
+    <h3 class="modal-title">Receipt Not Found</h3>
+    <p class="modal-tagline">We couldn't find a booking with that reference code.</p>
+    <div style="margin-top:26px;">
+      <a href="/" class="btn btn-primary">Back to SpaceVR</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

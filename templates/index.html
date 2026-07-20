@@ -1,56 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space VR Benin - Premium Lounge</title>
-    <!-- We link our custom static stylesheet here -->
-    <link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpaceVR -- Premium Gaming Center</title>
+<meta name="description" content="SpaceVR is a premium gaming lounge with VR combat pods, racing simulators, a PC arena, console lounge and a fully stocked Fuel Bar. Book your pod online." />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
 <body>
-    <header>
-        <div class="logo">SPACE VR</div>
-        <nav>
-            <a href="#">Home</a>
-            <a href="#">Games</a>
-            <a href="#">Bookings</a>
-        </nav>
-    </header>
 
-    <main class="hero">
-        <h1>ENTER ANOTHER DIMENSION</h1>
-        <p>The ultimate premium VR and esports lounge in Benin City.</p>
-        <button class="cta-btn">Book a Session</button>
-    </main>
-<section class="gallery-section">
-    <h2>EXPERIENCE THE EXTRAORDINARY</h2>
-    <div class="gallery-grid">
-        
-        <div class="gallery-item">
-            <img src="/static/images/vr-experience.jpg" alt="Immersive VR Gaming">
-            <div class="gallery-overlay">
-                <h3>Immersive VR</h3>
-                <p>Fully dive into otherworldly dimensions and high-octane simulations.</p>
-            </div>
+<div class="parallax-bg"></div>
+
+<nav class="navbar">
+  <div class="logo">SPACE<span>VR</span></div>
+  <ul class="nav-links">
+    <li><a href="#arsenal">Arsenal</a></li>
+    <li><a href="#gallery">Gallery</a></li>
+    <li><a href="#testimonials">Testimonials</a></li>
+    <li><a href="#support">Support</a></li>
+  </ul>
+  <button class="nav-cta" onclick="openBookingModal()">Book a Session</button>
+</nav>
+
+<!-- ============================= HERO ============================= -->
+<header class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-kicker"><span class="dot"></span> Pods Online Now</div>
+      <h1>Step Into The <span class="accent">Next Reality</span></h1>
+      <p class="hero-sub">
+        SpaceVR is a premium gaming lounge built for full-body VR combat, wheel-to-wheel
+        racing sims, competitive PC arenas and couch co-op -- fueled by our on-site
+        Fuel Bar. Reserve your pod in under a minute.
+      </p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="openBookingModal()">Book a Session</button>
+        <a href="#arsenal" class="btn btn-ghost">Explore The Arsenal</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-num">{{ zones|length }}</div>
+          <div class="stat-label">Active Zones</div>
         </div>
-
-        <div class="gallery-item">
-            <img src="/static/images/fifa-esports.jpg" alt="FIFA Esports Lounge">
-            <div class="gallery-overlay">
-                <h3>FIFA & Esports</h3>
-                <p>Go head-to-head in competitive football match tournaments.</p>
-            </div>
+        <div>
+          <div class="stat-num">24/7</div>
+          <div class="stat-label">Online Booking</div>
         </div>
-
-        <div class="gallery-item">
-            <img src="/static/images/lounge-vibes.jpg" alt="Space VR Lounge Arena">
-            <div class="gallery-overlay">
-                <h3>The Lounge Arena</h3>
-                <p>Premium gaming comfort, high-end gear, and unbeatable energy.</p>
-            </div>
+        <div>
+          <div class="stat-num">4.9<span style="font-size:16px;">/5</span></div>
+          <div class="stat-label">Player Rating</div>
         </div>
-
+      </div>
     </div>
+    <div class="hud-pod">
+      <div class="hud-pod-core">
+        <div class="pod-label">Pod Status</div>
+        <div class="pod-status">Ready</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================= ARSENAL ============================= -->
+<section id="arsenal">
+  <div class="container">
+    <div class="eyebrow">The Arsenal</div>
+    <h2 class="section-title">Choose Your Zone</h2>
+    <p class="section-lead">Every zone runs on premium hardware and resets between every session. Tap a zone to see what's loaded.</p>
+
+    <div class="zone-grid">
+      {% for zone_id, zone in zones.items() %}
+      <div class="zone-card" onclick="openZoneModal('{{ zone_id }}')">
+        <div class="zone-index">{{ loop.index }}</div>
+        <h3>{{ zone.name }}</h3>
+        <p>{{ zone.tagline }}</p>
+        <div class="zone-price">
+          {% if zone.price_per_hour > 0 %}
+            ${{ '%.2f'|format(zone.price_per_hour) }} / hour
+          {% else %}
+            À la carte
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
 </section>
 
+<!-- ============================= GALLERY ============================= -->
+<section id="gallery">
+  <div class="container">
+    <div class="eyebrow">Inside The Lounge</div>
+    <h2 class="section-title">The Space</h2>
+    <p class="section-lead">A look at the pods, rigs and lounge. Drop your own photos into <code>/static/images/</code> using the filenames below.</p>
+
+    <div class="gallery-grid">
+      <div class="gallery-item">
+        <img src="/static/images/gallery1.jpg" alt="SpaceVR VR combat pods" onerror="this.src='https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">VR Combat Zone</div>
+      </div>
+      <div class="gallery-item">
+        <img src="/static/images/gallery2.jpg" alt="SpaceVR racing simulator rigs" onerror="this.src='https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">Racing Simulators</div>
+      </div>
+      <div class="gallery-item">
+        <img src="/static/images/gallery3.jpg" alt="SpaceVR PC gaming arena" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">PC Gaming Arena</div>
+      </div>
+      <div class="gallery-item">
+        <img src="/static/images/gallery4.jpg" alt="SpaceVR console lounge" onerror="this.src='https://images.unsplash.com/photo-1580327344181-c1163234e5a0?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">Console Lounge</div>
+      </div>
+      <div class="gallery-item">
+        <img src="/static/images/gallery5.jpg" alt="SpaceVR fuel bar" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">Fuel Bar</div>
+      </div>
+      <div class="gallery-item">
+        <img src="/static/images/gallery6.jpg" alt="SpaceVR front counter" onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">Front Counter</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= TESTIMONIALS ============================= -->
+<section id="testimonials">
+  <div class="container">
+    <div class="eyebrow">Player Reviews</div>
+    <h2 class="section-title">What The Squad Says</h2>
+    <p class="section-lead">Real reviews from real players. Swap in your own by editing the testimonial data and photos in <code>/static/images/</code>.</p>
+
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <div class="testimonial-top">
+          <img class="avatar" src="/static/images/testimonial1.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=12'">
+          <div>
+            <div class="testimonial-name">Marcus D.</div>
+            <div class="testimonial-role">Regular -- VR Combat Zone</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-quote">The VR pods here are on a completely different level than anywhere else I've tried. Booking online took thirty seconds.</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-top">
+          <img class="avatar" src="/static/images/testimonial2.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=32'">
+          <div>
+            <div class="testimonial-name">Priya S.</div>
+            <div class="testimonial-role">Weekend Warrior -- Racing Sims</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-quote">The force-feedback rigs are incredible and the Fuel Bar means I never have to leave my seat between races.</p>
+      </div>
+      <div class="testimonial-card">
+        <div class="testimonial-top">
+          <img class="avatar" src="/static/images/testimonial3.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=47'">
+          <div>
+            <div class="testimonial-name">Jonah T.</div>
+            <div class="testimonial-role">Team Captain -- PC Arena</div>
+          </div>
+        </div>
+        <div class="testimonial-stars">★★★★★</div>
+        <p class="testimonial-quote">We booked six PC pods for a scrim night and the whole squad showed up with their receipts, zero hiccups at check-in.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= SUPPORT ============================= -->
+<section id="support">
+  <div class="container">
+    <div class="eyebrow">Need Help?</div>
+    <h2 class="section-title">Talk To The Team</h2>
+    <p class="section-lead">Send us a message about a booking, a billing question, or anything else -- a real person will reply to your email.</p>
+
+    <div class="support-panel">
+      <form id="supportForm">
+        <div class="form-grid">
+          <div class="field"><label>Full Name</label><input type="text" id="supportName" required /></div>
+          <div class="field"><label>Email Address</label><input type="email" id="supportEmail" required /></div>
+          <div class="field"><label>Phone (optional)</label><input type="text" id="supportPhone" /></div>
+          <div class="field"><label>Subject</label><input type="text" id="supportSubject" required /></div>
+          <div class="field full"><label>Message</label><textarea id="supportMessage" required></textarea></div>
+        </div>
+        <div class="form-error" id="supportError"></div>
+        <div style="margin-top:22px;">
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    &copy; <span id="year"></span> SpaceVR Gaming Center. All pods reset between sessions.
+  </div>
+</footer>
+
+<!-- ============================= ZONE / FUEL BAR MODAL ============================= -->
+<div class="modal-overlay" id="zoneModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('zoneModal')">&times;</button>
+    <div class="modal-eyebrow" id="zoneModalEyebrow">Zone Briefing</div>
+    <h3 class="modal-title" id="zoneModalTitle">Zone Name</h3>
+    <p class="modal-tagline" id="zoneModalTagline">Zone tagline</p>
+
+    <ul class="game-list" id="zoneModalGames"></ul>
+
+    <div id="fuelMenuContainer" style="display:none;"></div>
+
+    <div style="margin-top:10px; display:flex; gap:14px; flex-wrap:wrap;">
+      <button class="btn btn-primary" id="zoneModalPrimaryBtn">Book This Zone</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================= BOOKING MODAL ============================= -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('bookingModal')">&times;</button>
+    <div class="modal-eyebrow">Reserve Your Pod</div>
+    <h3 class="modal-title">Book a Session</h3>
+    <p class="modal-tagline">Fill in your details -- you'll get a reference code and payment instructions right after.</p>
+
+    <div class="selected-zone-banner" id="selectedZoneBanner" style="display:none;">
+      <span id="selectedZoneLabel"></span>
+      <a href="javascript:void(0)" onclick="openZoneModal('fuel-bar')" style="color:var(--neon-red-soft); font-size:12px;">+ Add Fuel Bar Items</a>
+    </div>
+
+    <form id="bookingForm">
+      <div class="form-grid">
+        <div class="field full">
+          <label>Zone</label>
+          <select id="bookingZone" required>
+            <option value="">Select a zone…</option>
+            {% for zone_id, zone in zones.items() %}
+              {% if zone.price_per_hour > 0 %}
+                <option value="{{ zone_id }}" data-price="{{ zone.price_per_hour }}" data-name="{{ zone.name }}">{{ zone.name }} -- ${{ '%.2f'|format(zone.price_per_hour) }}/hr</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Duration</label>
+          <select id="bookingDuration" required>
+            {% for d in durations %}
+              <option value="{{ d }}">{{ d }} minutes</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Session Date</label>
+          <input type="date" id="bookingDate" required />
+        </div>
+        <div class="field full">
+          <label>Time Slot</label>
+          <select id="bookingTimeSlot" required>
+            <option value="10:00 AM - 12:00 PM">10:00 AM – 12:00 PM</option>
+            <option value="12:00 PM - 02:00 PM">12:00 PM – 02:00 PM</option>
+            <option value="02:00 PM - 04:00 PM">02:00 PM – 04:00 PM</option>
+            <option value="04:00 PM - 06:00 PM">04:00 PM – 06:00 PM</option>
+            <option value="06:00 PM - 08:00 PM">06:00 PM – 08:00 PM</option>
+            <option value="08:00 PM - 10:00 PM">08:00 PM – 10:00 PM</option>
+          </select>
+        </div>
+        <div class="field"><label>Full Name</label><input type="text" id="bookingName" required /></div>
+        <div class="field"><label>Phone Number</label><input type="text" id="bookingPhone" required /></div>
+        <div class="field full"><label>Email Address</label><input type="email" id="bookingEmail" required /></div>
+      </div>
+
+      <div class="booking-drinks-list" id="bookingDrinksList"></div>
+
+      <div class="cost-summary">
+        <div class="row"><span>Zone cost</span><span id="costZone">$0.00</span></div>
+        <div class="row"><span>Fuel Bar items</span><span id="costDrinks">$0.00</span></div>
+        <div class="row total"><span>Total</span><span id="costTotal">$0.00</span></div>
+      </div>
+
+      <div class="form-error" id="bookingError"></div>
+
+      <div style="margin-top:26px;">
+        <button type="submit" class="btn btn-primary btn-full">Continue to Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============================= CHECKOUT MODAL ============================= -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('checkoutModal')">&times;</button>
+    <div class="modal-eyebrow">Step 2 of 2</div>
+    <h3 class="modal-title">Complete Your Payment</h3>
+    <p class="modal-tagline">Transfer the total amount using the details below, then confirm your transfer.</p>
+
+    <div class="ref-pill">Reference: <span id="checkoutRef"></span></div>
+
+    <div class="bank-card">
+      <div class="bank-row"><span class="label">Bank</span><span class="value" id="bankName"></span></div>
+      <div class="bank-row"><span class="label">Account Name</span><span class="value" id="bankAccountName"></span></div>
+      <div class="bank-row"><span class="label">Account Number</span><span class="value" id="bankAccountNumber"></span></div>
+      <div class="bank-row"><span class="label">Routing Number</span><span class="value" id="bankRoutingNumber"></span></div>
+      <div class="bank-row"><span class="label">Amount Due</span><span class="value" id="checkoutTotal"></span></div>
+    </div>
+
+    <div class="instructions-box" id="checkoutInstructions"></div>
+
+    <div style="margin-top:26px;">
+      <button class="btn btn-primary btn-full" id="markPaidBtn">I've Completed The Transfer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  window.SPACEVR_DATA = {
+    zones: {{ zones|tojson }},
+    fuelBarMenu: {{ fuel_bar_menu|tojson }},
+    durations: {{ durations|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpaceVR Admin — Sign In</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+</head>
+<body class="admin-body">
+
+<div class="login-shell">
+  <div class="login-card">
+    <div class="logo">SPACE<span>VR</span></div>
+    <div class="subtitle">Admin Control Center</div>
+
+    <form method="POST" action="{{ url_for('admin_login', next=request.args.get('next')) }}">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" name="username" required autofocus />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+    </form>
+
+    {% if error %}
+    <div class="login-error">{{ error }}</div>
+    {% endif %}
+  </div>
+</div>
+
+</body>
+</html>

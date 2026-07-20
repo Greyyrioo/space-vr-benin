@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpaceVR Admin — Control Center</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+</head>
+<body class="admin-body">
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <div>
+      <div class="logo">SPACE<span>VR</span></div>
+      <div class="subtitle">Control Center</div>
+    </div>
+
+    <nav class="admin-nav">
+      <button class="active" data-panel="overviewPanel" onclick="switchPanel('overviewPanel', this)">Overview</button>
+      <button data-panel="bookingsPanel" onclick="switchPanel('bookingsPanel', this)">
+        Bookings <span class="count-badge" id="bookingsCountBadge">0</span>
+      </button>
+      <button data-panel="ticketsPanel" onclick="switchPanel('ticketsPanel', this)">
+        Support Tickets <span class="count-badge" id="ticketsCountBadge">0</span>
+      </button>
+    </nav>
+
+    <div class="logout-link">
+      Signed in as {{ admin_username }} · <a href="{{ url_for('admin_logout') }}">Log out</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="admin-header">
+      <div>
+        <h1>Control Center</h1>
+        <div class="welcome">Live bookings, client contact details, and support tickets.</div>
+      </div>
+    </div>
+
+    <div class="stat-cards" id="statCards">
+      <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-value" id="statTotalBookings">0</div></div>
+      <div class="stat-card accent"><div class="stat-label">Confirmed Revenue</div><div class="stat-value" id="statRevenue">$0.00</div></div>
+      <div class="stat-card"><div class="stat-label">Awaiting Verification</div><div class="stat-value" id="statAwaiting">0</div></div>
+      <div class="stat-card"><div class="stat-label">Pending Payment</div><div class="stat-value" id="statPendingPayment">0</div></div>
+      <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-value" id="statOpenTickets">0</div></div>
+    </div>
+
+    <!-- OVERVIEW PANEL -->
+    <div class="admin-panel active" id="overviewPanel">
+      <div class="panel-title">
+        <span>Most Recent Bookings</span>
+        <button class="refresh-btn" onclick="loadBookings(); loadTickets();">Refresh</button>
+      </div>
+      <div id="recentBookingsTableWrap"></div>
+    </div>
+
+    <!-- BOOKINGS PANEL -->
+    <div class="admin-panel" id="bookingsPanel">
+      <div class="panel-title">
+        <span>All Bookings</span>
+        <button class="refresh-btn" onclick="loadBookings()">Refresh</button>
+      </div>
+      <div id="bookingsTableWrap"></div>
+    </div>
+
+    <!-- TICKETS PANEL -->
+    <div class="admin-panel" id="ticketsPanel">
+      <div class="panel-title">
+        <span>Customer Support Tickets</span>
+        <button class="refresh-btn" onclick="loadTickets()">Refresh</button>
+      </div>
+      <div class="ticket-list" id="ticketList"></div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
