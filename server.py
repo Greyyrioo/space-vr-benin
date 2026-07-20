@@ -1,5 +1,5 @@
 """
-SpaceVRBENIN — Premium Gaming Center
+SpaceVRBenin -- Premium Gaming Center
 Full-stack Flask application: public booking site + private admin control center.
 
 Run:
@@ -48,11 +48,8 @@ app.config["MAIL_USE_SSL"] = os.environ.get("MAIL_USE_SSL", "False") == "True"
 app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get(
-    "MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "no-reply@spacevr.local")
+    "MAIL_DEFAULT_SENDER", os.environ.get("MAIL_USERNAME", "no-reply@spacevrbenin.local")
 )
-# When no SMTP credentials are configured, emails are logged to the console
-# instead of actually being sent, so the whole app still runs end-to-end
-# without requiring a mail account to be set up first.
 app.config["MAIL_SUPPRESS_SEND"] = os.environ.get("MAIL_USERNAME") in (None, "")
 
 mail = Mail(app)
@@ -62,16 +59,14 @@ ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
 ADMIN_PASSWORD_HASH = generate_password_hash(os.environ.get("ADMIN_PASSWORD", "spacevr123"))
 
 # ---------------------------------------------------------------------------
-# Static business data: zones + fuel bar menu
-# (Kept server-side so the price/duration logic can never be tampered with
-#  from the client — the frontend only sends a zone_id / item ids.)
+# Static business data: zones + drinks bar menu
 # ---------------------------------------------------------------------------
 
 ZONES = {
     "vr-combat": {
         "name": "VR Combat Zone",
-        "tagline": "Full-body tracked VR pods",
-        "price_per_hour": 25.00,
+        "tagline": "Full-body tracked premium VR setups",
+        "price_per_hour": 15000.00,
         "games": [
             "Beat Saber", "Half-Life: Alyx", "Superhot VR",
             "Population: ONE", "Blade & Sorcery"
@@ -80,55 +75,53 @@ ZONES = {
     "racing-sim": {
         "name": "Racing Simulators",
         "tagline": "Force-feedback wheel rigs & motion seats",
-        "price_per_hour": 30.00,
+        "price_per_hour": 18000.00,
         "games": [
             "F1 23 Championship Rig", "Forza Motorsport",
             "Assetto Corsa Competizione", "Gran Turismo 7"
         ],
     },
-    "Playstation-arena": {
-        "name": "playstation Gaming Arena",
-        "tagline": "240Hz rigs, RTX-class graphics",
-        "price_per_hour": 15.00,
+    "ps5-hub": {
+        "name": "PlayStation 5 Hub",
+        "tagline": "Couch co-op and competitive gaming on the big screen",
+        "price_per_hour": 8000.00,
         "games": [
-            "Valorant", "Counter-Strike 2", "Apex Legends", "Cyberpunk 2077"
+            "FIFA 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "Elden Ring"
         ],
     },
-    "console-lounge": {
-        "name": "Console Lounge",
-        "tagline": "Couch co-op on the big screen",
-        "price_per_hour": 12.00,
-        "games": [
-            "FIFA 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "GTA 6"
-        ],
+    "table-tennis": {
+        "name": "Table Tennis Zone",
+        "tagline": "Fast-paced table tennis action with friends",
+        "price_per_hour": 5000.00,
+        "games": ["Singles Match", "Doubles Showdown"],
     },
     "drinks-bar": {
-        "name": "drinks Bar",
-        "tagline": "Refreshments delivered straight to your table",
+        "name": "Drinks Bar",
+        "tagline": "Refreshments delivered straight to your station",
         "price_per_hour": 0.00,
         "games": [],
     },
 }
 
-Drinks_BAR_MENU = {
-    "energy-drink": {"name": "Neon Surge Energy Drink", "price": 3.50},
-    "cola": {"name": "fanta Cola", "price": 2.00},
-    "water": {"name": "Bottled Water", "price": 1.00},
-    "Sprits": {"name": "sprits cola Drink", "price": 2.50},
-    "chips": {"name": "Loaded Nacho Chips", "price": 3.00},
-    "candy-bar": {"name": "Choco Candy Bar", "price": 1.50},
-    "Chocolate": {"name": "Vigu Milk", "price": 2.00},
-    "coffee": {"name": "Espresso Shot", "price": 2.50},
+FUEL_BAR_MENU = {
+    "energy-drink": {"name": "Neon Surge Energy Drink", "price": 1500.00},
+    "cola": {"name": "Ice-Cold Cola", "price": 1000.00},
+    "water": {"name": "Bottled Water", "price": 500.00},
+    "iso-sports": {"name": "Iso Sports Drink", "price": 1200.00},
+    "chips": {"name": "Loaded Nacho Chips", "price": 1500.00},
+    "candy-bar": {"name": "Choco Candy Bar", "price": 800.00},
+    "pretzels": {"name": "Salted Pretzels", "price": 1000.00},
+    "coffee": {"name": "Espresso Shot", "price": 1200.00},
 }
 
 BANK_DETAILS = {
-    "bank_name": "OPAY MIRCOFINANCE Bank",
-    "account_name": "GABRIEL OSAGHAE  ",
-    "account_number": "8167059132",
+    "bank_name": "OPay",
+    "account_name": "SpaceVR Benin",
+    "account_number": "8146497579",
     "reference_note": "Use your SVR booking reference as the transfer narration/description.",
 }
 
-DURATIONS_MIN = [10, 20, 30, 40]
+DURATIONS_MIN = [30, 60, 90, 120]
 
 # ---------------------------------------------------------------------------
 # Database helpers
@@ -263,26 +256,23 @@ def row_to_ticket_dict(row):
 # ---------------------------------------------------------------------------
 
 def send_email_safe(subject, recipients, body_text, body_html=None):
-    """Send an email through Flask-Mail. Falls back to console logging if
-    MAIL_SUPPRESS_SEND is on (no SMTP credentials configured), so the rest
-    of the app keeps working during local development."""
     try:
         msg = Message(subject=subject, recipients=recipients, body=body_text, html=body_html)
         mail.send(msg)
         return True
-    except Exception as exc:  # noqa: BLE001 - we want to log and continue
+    except Exception as exc:
         print(f"[MAIL ERROR] Could not send '{subject}' to {recipients}: {exc}")
         return False
 
 
 def send_booking_received_email(booking):
-    subject = f"SpaceVR Booking Received — {booking['ref_id']}"
+    subject = f"SpaceVRBenin Booking Received -- {booking['ref_id']}"
     drinks_lines = "\n".join(
-        f"  - {d['qty']} x {d['name']} (${d['line_total']:.2f})" for d in booking["drinks"]
+        f"  - {d['qty']} x {d['name']} (₦{d['line_total']:,.2f})" for d in booking["drinks"]
     ) or "  (none)"
     body = f"""Hi {booking['customer_name']},
 
-We've received your SpaceVR booking request. Here are the details:
+We've received your SpaceVRBenin booking request. Here are the details:
 
 Reference:   {booking['ref_id']}
 Zone:        {booking['zone_name']}
@@ -290,34 +280,33 @@ Duration:    {booking['duration_min']} minutes
 Date:        {booking['session_date']}
 Time slot:   {booking['time_slot']}
 
-Fuel Bar items:
+Drinks Bar items:
 {drinks_lines}
 
-Zone cost:   ${booking['zone_cost']:.2f}
-Drinks cost: ${booking['drinks_cost']:.2f}
-TOTAL:       ${booking['total_cost']:.2f}
+Zone cost:   ₦{booking['zone_cost']:,.2f}
+Drinks cost: ₦{booking['drinks_cost']:,.2f}
+TOTAL:       ₦{booking['total_cost']:,.2f}
 
-To activate your pod, please transfer the total amount to:
+To activate your station, please transfer the total amount to:
 
   Bank:            {BANK_DETAILS['bank_name']}
   Account name:    {BANK_DETAILS['account_name']}
   Account number:  {BANK_DETAILS['account_number']}
-  Routing number:  {BANK_DETAILS['routing_number']}
   Note:            {BANK_DETAILS['reference_note']}
 
 Then bring a screenshot of your receipt or transfer confirmation to the
-office counter to activate your pod.
+office counter to activate your station.
 
-See you at SpaceVR!
+See you at SpaceVRBenin!
 """
     send_email_safe(subject, [booking["email"]], body)
 
 
 def send_payment_confirmation_email(booking):
-    subject = f"SpaceVR Session Confirmed — {booking['ref_id']}"
+    subject = f"SpaceVRBenin Session Confirmed -- {booking['ref_id']}"
     body = f"""Hi {booking['customer_name']},
 
-Good news — your payment has been verified and your session is CONFIRMED.
+Good news -- your payment has been verified and your session is CONFIRMED.
 
 Reference:  {booking['ref_id']}
 Zone:       {booking['zone_name']}
@@ -326,18 +315,18 @@ Time slot:  {booking['time_slot']}
 Duration:   {booking['duration_min']} minutes
 
 Please arrive 10 minutes early with your reference code so we can get your
-pod ready. See you soon!
+station ready. See you soon!
 
-— The SpaceVR Team
+-- The SpaceVRBenin Team
 """
     send_email_safe(subject, [booking["email"]], body)
 
 
 def send_ticket_reply_email(ticket):
-    subject = f"SpaceVR Support — Re: {ticket['subject']}"
+    subject = f"SpaceVRBenin Support -- Re: {ticket['subject']}"
     body = f"""Hi {ticket['name']},
 
-Thanks for reaching out to SpaceVR support. Here's our response to your
+Thanks for reaching out to SpaceVRBenin support. Here's our response to your
 message:
 
 Your message:
@@ -349,7 +338,7 @@ Our reply:
 If you have more questions, just reply to this email or send another
 message through our website.
 
-— The SpaceVR Team
+-- The SpaceVRBenin Team
 """
     send_email_safe(subject, [ticket["email"]], body)
 
@@ -397,7 +386,7 @@ def create_booking():
     duration_min = data.get("duration_min")
     session_date = (data.get("session_date") or "").strip()
     time_slot = (data.get("time_slot") or "").strip()
-    drink_selections = data.get("drinks") or []  # [{item_id, qty}]
+    drink_selections = data.get("drinks") or []
 
     errors = []
     if len(customer_name) < 2:
@@ -668,10 +657,6 @@ def admin_reply_ticket(ticket_id):
     send_ticket_reply_email(ticket)
     return jsonify({"success": True, "ticket": ticket})
 
-
-# ---------------------------------------------------------------------------
-# Entrypoint
-# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     init_db()

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SpaceVR -- Premium Gaming Center</title>
-<meta name="description" content="SpaceVR Benin is Benin City's ultimate premium gaming destination, featuring advanced virtual reality combat stations, professional racing simulators, a high-performance PC setup, a comfortable console lounge, and a fully stocked drinks Bar." />
+<title>SpaceVRBenin -- Premium Gaming Center</title>
+<meta name="description" content="SpaceVRBenin is a premium gaming lounge with VR combat zones, racing simulators, PlayStation 5 hubs, table tennis, and a fully stocked Drinks Bar. Book your session online." />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
@@ -12,7 +12,7 @@
 <div class="parallax-bg"></div>
 
 <nav class="navbar">
-  <div class="logo">SPACE<span>VR</span></div>
+  <div class="logo">SpaceVR<span>Benin</span></div>
   <ul class="nav-links">
     <li><a href="#arsenal">Arsenal</a></li>
     <li><a href="#gallery">Gallery</a></li>
@@ -26,12 +26,12 @@
 <header class="hero">
   <div class="container hero-grid">
     <div>
-      <div class="hero-kicker"><span class="dot"></span> Pods Online Now</div>
+      <div class="hero-kicker"><span class="dot"></span> Stations Online Now</div>
       <h1>Step Into The <span class="accent">Next Reality</span></h1>
       <p class="hero-sub">
-        SpaceVR is a premium gaming lounge built for full-body VR combat, wheel-to-wheel
-        racing sims, competitive PC arenas and couch co-op -- fueled by our on-site
-        drink Bar. Reserve your slot in under a minute.
+        SpaceVRBenin is a premium gaming lounge built for full-body VR combat, wheel-to-wheel
+        racing sims, PlayStation 5 matchups, and fast-paced table tennis -- fueled by our on-site
+        Drinks Bar. Reserve your station in under a minute.
       </p>
       <div class="hero-actions">
         <button class="btn btn-primary" onclick="openBookingModal()">Book a Session</button>
@@ -54,7 +54,7 @@
     </div>
     <div class="hud-pod">
       <div class="hud-pod-core">
-        <div class="pod-label">pod Status</div>
+        <div class="pod-label">Station Status</div>
         <div class="pod-status">Ready</div>
       </div>
     </div>
@@ -76,7 +76,7 @@
         <p>{{ zone.tagline }}</p>
         <div class="zone-price">
           {% if zone.price_per_hour > 0 %}
-            ${{ '%.2f'|format(zone.price_per_hour) }} / hour
+            ₦{{ '{:,.2f}'.format(zone.price_per_hour) }} / hour
           {% else %}
             À la carte
           {% endif %}
@@ -92,31 +92,31 @@
   <div class="container">
     <div class="eyebrow">Inside The Lounge</div>
     <h2 class="section-title">The Space</h2>
-    <p class="section-lead">A look at the pods, rigs and lounge. Drop your own photos into <code>/static/images/</code> using the filenames below.</p>
+    <p class="section-lead">A look at the stations, rigs and lounge. Drop your own photos into <code>/static/images/</code> using the filenames below.</p>
 
     <div class="gallery-grid">
       <div class="gallery-item">
-        <img src="/static/images/gallery1.jpg" alt="SpaceVR VR combat pods" onerror="this.src='https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=800&auto=format&fit=crop'">
-        <div class="gallery-caption">VR Combat </div>
+        <img src="/static/images/gallery1.jpg" alt="SpaceVRBenin VR combat zones" onerror="this.src='https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">VR Combat Zone</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery2.jpg" alt="SpaceVR racing simulator rigs" onerror="this.src='https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop'">
+        <img src="/static/images/gallery2.jpg" alt="SpaceVRBenin racing simulator rigs" onerror="this.src='https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">Racing Simulators</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery3.jpg" alt="SpaceVR PC gaming arena" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop'">
-        <div class="gallery-caption">PC Gaming Arena</div>
+        <img src="/static/images/gallery3.jpg" alt="SpaceVRBenin PS5 hub" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">PlayStation 5 Hub</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery4.jpg" alt="SpaceVR console lounge" onerror="this.src='https://images.unsplash.com/photo-1580327344181-c1163234e5a0?q=80&w=800&auto=format&fit=crop'">
-        <div class="gallery-caption">Console Lounge</div>
+        <img src="/static/images/gallery4.jpg" alt="SpaceVRBenin table tennis zone" onerror="this.src='https://images.unsplash.com/photo-1580327344181-c1163234e5a0?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">Table Tennis Zone</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery5.jpg" alt="SpaceVR fuel bar" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop'">
-        <div class="gallery-caption">drink Bar</div>
+        <img src="/static/images/gallery5.jpg" alt="SpaceVRBenin drinks bar" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop'">
+        <div class="gallery-caption">Drinks Bar</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery6.jpg" alt="SpaceVR front counter" onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop'">
+        <img src="/static/images/gallery6.jpg" alt="SpaceVRBenin front counter" onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">Front Counter</div>
       </div>
     </div>
@@ -140,7 +140,7 @@
           </div>
         </div>
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">The VR pods here are on a completely different level than anywhere else I've tried. Booking online took thirty seconds.</p>
+        <p class="testimonial-quote">The VR stations here are on a completely different level than anywhere else I've tried. Booking online took thirty seconds.</p>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-top">
@@ -151,18 +151,18 @@
           </div>
         </div>
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">The force-feedback rigs are incredible and the Fuel Bar means I never have to leave my seat between races.</p>
+        <p class="testimonial-quote">The force-feedback rigs are incredible and the Drinks Bar means I never have to leave my seat between matches.</p>
       </div>
       <div class="testimonial-card">
         <div class="testimonial-top">
           <img class="avatar" src="/static/images/testimonial3.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=47'">
           <div>
             <div class="testimonial-name">Jonah T.</div>
-            <div class="testimonial-role">Team Captain -- PC Arena</div>
+            <div class="testimonial-role">Team Captain -- PS5 Hub</div>
           </div>
         </div>
         <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">We booked six PC pods for a scrim night and the whole squad showed up with their receipts, zero hiccups at check-in.</p>
+        <p class="testimonial-quote">We booked gaming setups for a tournament night and the whole squad showed up with their receipts, zero hiccups at check-in.</p>
       </div>
     </div>
   </div>
@@ -194,12 +194,17 @@
 </section>
 
 <footer>
-  <div class="container">
-    &copy; <span id="year"></span> SpaceVR Gaming Center. All pods reset between sessions.
+  <div class="container" style="text-align: center; padding: 30px 20px; font-family: sans-serif; line-height: 1.6;">
+    <p><strong>Location:</strong> 113 New Lagos Road, Opp. Okhoro Junction, Benin City</p>
+    <p style="margin: 12px 0;">
+      <a href="https://www.instagram.com/spacevrbenin?igsh=bnJ4ZjM5ODNmZWl6&utm_source=qr" target="_blank" style="color: var(--accent, #007bff); text-decoration: none; margin-right: 15px;">Instagram: @SpaceVRBenin</a>
+      <a href="https://www.tiktok.com/@spacevrbeninn?_r=1&_t=ZS-98CWbCseRa3" target="_blank" style="color: var(--accent, #007bff); text-decoration: none;">TikTok: @SpaceVRBenin</a>
+    </p>
+    <p>&copy; 2026 SpaceVRBenin. All gaming setups reset between sessions.</p>
   </div>
 </footer>
 
-<!-- ============================= ZONE / FUEL BAR MODAL ============================= -->
+<!-- ============================= ZONE / DRINKS BAR MODAL ============================= -->
 <div class="modal-overlay" id="zoneModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('zoneModal')">&times;</button>
@@ -221,13 +226,13 @@
 <div class="modal-overlay" id="bookingModal">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('bookingModal')">&times;</button>
-    <div class="modal-eyebrow">Reserve Your Pod</div>
+    <div class="modal-eyebrow">Reserve Your Station</div>
     <h3 class="modal-title">Book a Session</h3>
     <p class="modal-tagline">Fill in your details -- you'll get a reference code and payment instructions right after.</p>
 
     <div class="selected-zone-banner" id="selectedZoneBanner" style="display:none;">
       <span id="selectedZoneLabel"></span>
-      <a href="javascript:void(0)" onclick="openZoneModal('fuel-bar')" style="color:var(--neon-red-soft); font-size:12px;">+ Add Fuel Bar Items</a>
+      <a href="javascript:void(0)" onclick="openZoneModal('fuel-bar')" style="color:var(--neon-red-soft); font-size:12px;">+ Add Drinks Bar Items</a>
     </div>
 
     <form id="bookingForm">
@@ -238,7 +243,7 @@
             <option value="">Select a zone…</option>
             {% for zone_id, zone in zones.items() %}
               {% if zone.price_per_hour > 0 %}
-                <option value="{{ zone_id }}" data-price="{{ zone.price_per_hour }}" data-name="{{ zone.name }}">{{ zone.name }} -- ${{ '%.2f'|format(zone.price_per_hour) }}/hr</option>
+                <option value="{{ zone_id }}" data-price="{{ zone.price_per_hour }}" data-name="{{ zone.name }}">{{ zone.name }} -- ₦{{ '{:,.0f}'.format(zone.price_per_hour) }}/hr</option>
               {% endif %}
             {% endfor %}
           </select>
@@ -274,9 +279,9 @@
       <div class="booking-drinks-list" id="bookingDrinksList"></div>
 
       <div class="cost-summary">
-        <div class="row"><span>Zone cost</span><span id="costZone">$0.00</span></div>
-        <div class="row"><span>Fuel Bar items</span><span id="costDrinks">$0.00</span></div>
-        <div class="row total"><span>Total</span><span id="costTotal">$0.00</span></div>
+        <div class="row"><span>Zone cost</span><span id="costZone">₦0.00</span></div>
+        <div class="row"><span>Drinks Bar items</span><span id="costDrinks">₦0.00</span></div>
+        <div class="row total"><span>Total</span><span id="costTotal">₦0.00</span></div>
       </div>
 
       <div class="form-error" id="bookingError"></div>
@@ -318,7 +323,7 @@
 <script>
   window.SPACEVR_DATA = {
     zones: {{ zones|tojson }},
-    drinkBarMenu: {{ fuel_bar_menu|tojson }},
+    fuelBarMenu: {{ fuel_bar_menu|tojson }},
     durations: {{ durations|tojson }}
   };
 </script>
