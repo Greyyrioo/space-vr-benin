@@ -1,4 +1,4 @@
-# SpaceVR — Premium Gaming Center
+# SpaceVRBenin — Premium Gaming Center
 
 A full-stack booking site + private admin control center for a VR/gaming lounge.
 

@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>SpaceVR -- Premium Gaming Center</title>
-<meta name="description" content="SpaceVR is a premium gaming lounge with VR combat pods, racing simulators, a PC arena, console lounge and a fully stocked Fuel Bar. Book your pod online." />
+<meta name="description" content="SpaceVR Benin is Benin City's ultimate premium gaming destination, featuring advanced virtual reality combat stations, professional racing simulators, a high-performance PC setup, a comfortable console lounge, and a fully stocked drinks Bar." />
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
@@ -31,7 +31,7 @@
       <p class="hero-sub">
         SpaceVR is a premium gaming lounge built for full-body VR combat, wheel-to-wheel
         racing sims, competitive PC arenas and couch co-op -- fueled by our on-site
-        Fuel Bar. Reserve your pod in under a minute.
+        drink Bar. Reserve your slot in under a minute.
       </p>
       <div class="hero-actions">
         <button class="btn btn-primary" onclick="openBookingModal()">Book a Session</button>
@@ -54,7 +54,7 @@
     </div>
     <div class="hud-pod">
       <div class="hud-pod-core">
-        <div class="pod-label">Pod Status</div>
+        <div class="pod-label">pod Status</div>
         <div class="pod-status">Ready</div>
       </div>
     </div>
@@ -97,7 +97,7 @@
     <div class="gallery-grid">
       <div class="gallery-item">
         <img src="/static/images/gallery1.jpg" alt="SpaceVR VR combat pods" onerror="this.src='https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=800&auto=format&fit=crop'">
-        <div class="gallery-caption">VR Combat Zone</div>
+        <div class="gallery-caption">VR Combat </div>
       </div>
       <div class="gallery-item">
         <img src="/static/images/gallery2.jpg" alt="SpaceVR racing simulator rigs" onerror="this.src='https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop'">
@@ -113,7 +113,7 @@
       </div>
       <div class="gallery-item">
         <img src="/static/images/gallery5.jpg" alt="SpaceVR fuel bar" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop'">
-        <div class="gallery-caption">Fuel Bar</div>
+        <div class="gallery-caption">drink Bar</div>
       </div>
       <div class="gallery-item">
         <img src="/static/images/gallery6.jpg" alt="SpaceVR front counter" onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop'">
@@ -302,7 +302,6 @@
       <div class="bank-row"><span class="label">Bank</span><span class="value" id="bankName"></span></div>
       <div class="bank-row"><span class="label">Account Name</span><span class="value" id="bankAccountName"></span></div>
       <div class="bank-row"><span class="label">Account Number</span><span class="value" id="bankAccountNumber"></span></div>
-      <div class="bank-row"><span class="label">Routing Number</span><span class="value" id="bankRoutingNumber"></span></div>
       <div class="bank-row"><span class="label">Amount Due</span><span class="value" id="checkoutTotal"></span></div>
     </div>
 
@@ -319,7 +318,7 @@
 <script>
   window.SPACEVR_DATA = {
     zones: {{ zones|tojson }},
-    fuelBarMenu: {{ fuel_bar_menu|tojson }},
+    drinkBarMenu: {{ fuel_bar_menu|tojson }},
     durations: {{ durations|tojson }}
   };
 </script>

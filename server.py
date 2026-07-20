@@ -1,5 +1,5 @@
 """
-SpaceVR — Premium Gaming Center
+SpaceVRBENIN — Premium Gaming Center
 Full-stack Flask application: public booking site + private admin control center.
 
 Run:
@@ -86,8 +86,8 @@ ZONES = {
             "Assetto Corsa Competizione", "Gran Turismo 7"
         ],
     },
-    "pc-arena": {
-        "name": "PC Gaming Arena",
+    "Playstation-arena": {
+        "name": "playstation Gaming Arena",
         "tagline": "240Hz rigs, RTX-class graphics",
         "price_per_hour": 15.00,
         "games": [
@@ -99,37 +99,36 @@ ZONES = {
         "tagline": "Couch co-op on the big screen",
         "price_per_hour": 12.00,
         "games": [
-            "FIFA 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "Elden Ring"
+            "FIFA 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "GTA 6"
         ],
     },
-    "fuel-bar": {
-        "name": "Fuel Bar",
-        "tagline": "Refreshments delivered straight to your pod",
+    "drinks-bar": {
+        "name": "drinks Bar",
+        "tagline": "Refreshments delivered straight to your table",
         "price_per_hour": 0.00,
         "games": [],
     },
 }
 
-FUEL_BAR_MENU = {
+Drinks_BAR_MENU = {
     "energy-drink": {"name": "Neon Surge Energy Drink", "price": 3.50},
-    "cola": {"name": "Ice-Cold Cola", "price": 2.00},
+    "cola": {"name": "fanta Cola", "price": 2.00},
     "water": {"name": "Bottled Water", "price": 1.00},
-    "iso-sports": {"name": "Iso Sports Drink", "price": 2.50},
+    "Sprits": {"name": "sprits cola Drink", "price": 2.50},
     "chips": {"name": "Loaded Nacho Chips", "price": 3.00},
     "candy-bar": {"name": "Choco Candy Bar", "price": 1.50},
-    "pretzels": {"name": "Salted Pretzels", "price": 2.00},
+    "Chocolate": {"name": "Vigu Milk", "price": 2.00},
     "coffee": {"name": "Espresso Shot", "price": 2.50},
 }
 
 BANK_DETAILS = {
-    "bank_name": "First Continental Bank",
-    "account_name": "SpaceVR Gaming Center Ltd",
-    "account_number": "0123456789",
-    "routing_number": "044000037",
+    "bank_name": "OPAY MIRCOFINANCE Bank",
+    "account_name": "GABRIEL OSAGHAE  ",
+    "account_number": "8167059132",
     "reference_note": "Use your SVR booking reference as the transfer narration/description.",
 }
 
-DURATIONS_MIN = [30, 60, 90, 120]
+DURATIONS_MIN = [10, 20, 30, 40]
 
 # ---------------------------------------------------------------------------
 # Database helpers
