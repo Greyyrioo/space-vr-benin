@@ -75,9 +75,9 @@
         <h3>{{ zone.name }}</h3>
         <p>{{ zone.tagline }}</p>
         <div class="zone-price">
-          {% if zone.price_per_game > 0 %}
-            ₦{{ '{:,.2f}'.format(zone.price_per_game) }} / game
-          {% else %}
+    {% if zone.price_per_game > 0 %}
+        ₦{{ '{:,.0f}'.format(zone.price_per_game if zone.price_per_game else 0) }} / game
+    {% else %}
             À la carte
           {% endif %}
         </div>
