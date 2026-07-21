@@ -76,16 +76,18 @@
     } else {
       fuelContainerEl.style.display = "none";
       fuelContainerEl.innerHTML = "";
-        gameListEl.style.display = "grid";
+                gameListEl.style.display = "grid";
         gameListEl.innerHTML = zone.games
-                    .map(function(g) { return '<li style="cursor: pointer;" onclick="selectGameAndBook(\'' + zoneId + '\', \'' + escapeHtml(g) + '\')">▸ ' + escapeHtml(g) + '</li>'; })
-        .join("");
-                gameListEl.onclick = function (e) {
-            const li = e.target.closest("li");
-            if (li) {
-                selectGameAndBook(li.dataset.zone, li.dataset.game);
-            }
+            .map(function(g) {
+                return '<li style="cursor: pointer;" onclick="selectGameAndBook(\'' + zoneId + '\', \'' + escapeHtml(g) + '\')">▸ ' + escapeHtml(g) + '</li>';
+            })
+            .join("");
+
+        primaryBtn.textContent = "Book This Zone";
+        primaryBtn.onclick = function () {
+            selectZoneAndBook(zoneId);
         };
+
 
         primaryBtn.textContent = "Book This Zone";
         primaryBtn.onclick = function () {
