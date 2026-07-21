@@ -92,7 +92,7 @@
   <div class="container">
     <div class="eyebrow">Inside The Lounge</div>
     <h2 class="section-title">The Space</h2>
-    <p class="section-lead">A look at the stations, rigs and lounge. Drop your own photos into <code>/static/images/</code> using the filenames below.</p>
+    <p class="section-lead">A look at the stations, rigs and lounge.</p>
 
     <div class="gallery-grid">
       <div class="gallery-item">
@@ -128,41 +128,59 @@
   <div class="container">
     <div class="eyebrow">Player Reviews</div>
     <h2 class="section-title">What The Squad Says</h2>
-    <p class="section-lead">Real reviews from real players. Swap in your own by editing the testimonial data and photos in <code>/static/images/</code>.</p>
+    <p class="section-lead">See real reactions and gameplay experiences directly from our players.</p>
 
     <div class="testimonial-grid">
-      <div class="testimonial-card">
-        <div class="testimonial-top">
-          <img class="avatar" src="/static/images/testimonial1.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=12'">
-          <div>
-            <div class="testimonial-name">Marcus D.</div>
-            <div class="testimonial-role">Regular -- VR Combat Zone</div>
-          </div>
+      <!-- Testimony 1: Miss Zee -->
+      <div class="testimonial-card video-card">
+        <video controls poster="/static/images/testimonial-miss-zee.jpg" preload="metadata">
+          <source src="/static/videos/miss-zee.mp4" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+        <div class="testimonial-info">
+          <div class="testimonial-name">Miss Zee</div>
+          <div class="testimonial-stars" style="color: #ff0055; margin: 4px 0;">★★★★★</div>
+          <div class="testimonial-role">VR Combat Zone</div>
         </div>
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">The VR stations here are on a completely different level than anywhere else I've tried. Booking online took thirty seconds.</p>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-top">
-          <img class="avatar" src="/static/images/testimonial2.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=32'">
-          <div>
-            <div class="testimonial-name">Priya S.</div>
-            <div class="testimonial-role">Weekend Warrior -- Racing Sims</div>
-          </div>
+
+      <!-- Testimony 2: Miss Martha -->
+      <div class="testimonial-card video-card">
+        <video controls poster="/static/images/testimonial-miss-martha.jpg" preload="metadata">
+          <source src="/static/videos/miss-martha.mp4" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+        <div class="testimonial-info">
+          <div class="testimonial-name">Miss Martha</div>
+          <div class="testimonial-stars" style="color: #ff0055; margin: 4px 0;">★★★★☆</div>
+          <div class="testimonial-role">Racing Sims</div>
         </div>
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">The force-feedback rigs are incredible and the Drinks Bar means I never have to leave my seat between matches.</p>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-top">
-          <img class="avatar" src="/static/images/testimonial3.jpg" alt="Player review avatar" onerror="this.src='https://i.pravatar.cc/100?img=47'">
-          <div>
-            <div class="testimonial-name">Jonah T.</div>
-            <div class="testimonial-role">Team Captain -- PS5 Hub</div>
-          </div>
+
+      <!-- Testimony 3: Squad -->
+      <div class="testimonial-card video-card">
+        <video controls poster="/static/images/testimonial-squad.jpg" preload="metadata">
+          <source src="/static/videos/squad.mp4" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+        <div class="testimonial-info">
+          <div class="testimonial-name">Squad</div>
+          <div class="testimonial-stars" style="color: #ff0055; margin: 4px 0;">★★★★★</div>
+          <div class="testimonial-role">PS5 Hub & Lounge</div>
         </div>
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-quote">We booked gaming setups for a tournament night and the whole squad showed up with their receipts, zero hiccups at check-in.</p>
+      </div>
+
+      <!-- Testimony 4: Anonymous Couple -->
+      <div class="testimonial-card video-card">
+        <video controls poster="/static/images/testimonial-couple.jpg" preload="metadata">
+          <source src="/static/videos/anonymous-couple.mp4" type="video/mp4">
+          Your browser does not support video playback.
+        </video>
+        <div class="testimonial-info">
+          <div class="testimonial-name">Anonymous Couple</div>
+          <div class="testimonial-stars" style="color: #ff0055; margin: 4px 0;">★★★★☆</div>
+          <div class="testimonial-role">Co-Op Gaming & Drinks Bar</div>
+        </div>
       </div>
     </div>
   </div>
@@ -240,26 +258,25 @@
         <div class="field full">
           <label>Zone</label>
           <select id="bookingZone" required>
-    <option value="">Select a zone...</option>
-    {% for zone_id, zone in zones.items() %}
-        {% if zone.price_per_game > 0 %}
-            <option value="{{ zone_id }}" data-price="{{ zone.price_per_game }}" data-name="{{ zone.name }}">{{ zone.name }} -- ₦{{ '{:,.0f}'.format(zone.price_per_game) }}/game</option>
-        {% endif %}
-    {% endfor %}
-</select>
-</div>
+            <option value="">Select a zone...</option>
+            {% for zone_id, zone in zones.items() %}
+                {% if zone.price_per_game > 0 %}
+                    <option value="{{ zone_id }}" data-price="{{ zone.price_per_game }}" data-name="{{ zone.name }}">{{ zone.name }} -- ₦{{ '{:,.0f}'.format(zone.price_per_game) }}/game</option>
+                {% endif %}
+            {% endfor %}
+          </select>
+        </div>
 
-<div class="field">
-    <label>Duration / Games</label>
-    <select id="bookingDuration" required>
-        <option value="1">1 Game (₦3,000)</option>
-        <option value="2">2 Games (₦6,000)</option>
-        <option value="3">3 Games (₦9,000)</option>
-        <option value="4">4 Games (₦12,000)</option>
-        <option value="5">5 Games (₦15,000)</option>
-    </select>
-</div>
-
+        <div class="field">
+            <label>Duration / Games</label>
+            <select id="bookingDuration" required>
+                <option value="1">1 Game (₦3,000)</option>
+                <option value="2">2 Games (₦6,000)</option>
+                <option value="3">3 Games (₦9,000)</option>
+                <option value="4">4 Games (₦12,000)</option>
+                <option value="5">5 Games (₦15,000)</option>
+            </select>
+        </div>
 
         <div class="field">
           <label>Session Date</label>
