@@ -76,21 +76,44 @@
     } else {
       fuelContainerEl.style.display = "none";
       fuelContainerEl.innerHTML = "";
-      gameListEl.style.display = "grid";
-      gameListEl.innerHTML = zone.games
-        .map((g) => `<li>${escapeHtml(g)}</li>`)
+        gameListEl.style.display = "grid";
+        gameListEl.innerHTML = zone.games
+                    .map(function(g) { return '<li style="cursor: pointer;" onclick="selectGameAndBook(\'' + zoneId + '\', \'' + escapeHtml(g) + '\')">▸ ' + escapeHtml(g) + '</li>'; })
         .join("");
+                gameListEl.onclick = function (e) {
+            const li = e.target.closest("li");
+            if (li) {
+                selectGameAndBook(li.dataset.zone, li.dataset.game);
+            }
+        };
 
-      primaryBtn.textContent = "Book This Zone";
-      primaryBtn.onclick = function () {
-        bookingState.zoneId = zoneId;
-        closeModal("zoneModal");
-        openBookingModal();
-      };
-    }
-
+        primaryBtn.textContent = "Book This Zone";
+        primaryBtn.onclick = function () {
+            selectZoneAndBook(zoneId);
+        };
+   
     openModal("zoneModal");
   };
+window.selectZoneAndBook = function (zoneId) {
+    bookingState.zoneId = zoneId;
+    closeModal("zoneModal");
+    openBookingModal();
+
+    const zoneSelect = document.getElementById("zone_select") || document.querySelector("select[name='zone_id']");
+    if (zoneSelect) {
+        zoneSelect.value = zoneId;
+        zoneSelect.dispatchEvent(new Event("change"));
+    }
+};
+
+window.selectGameAndBook = function (zoneId, gameName) {
+    selectZoneAndBook(zoneId);
+
+    const gameSelect = document.getElementById("game_select") || document.querySelector("select[name='game']");
+    if (gameSelect) {
+        gameSelect.value = gameName;
+    }
+};
 
   function renderFuelMenu(container) {
     const menu = DATA.fuelBarMenu;
