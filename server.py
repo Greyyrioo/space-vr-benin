@@ -22,7 +22,7 @@ from functools import wraps
 
 from flask import (
     Flask, render_template, request, jsonify, redirect,
-    url_for, session, g, flash
+    url_for, session, g, flash, send_file, Response
 )
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -122,6 +122,7 @@ BANK_DETAILS = {
 }
 
 DURATIONS_MIN = [1, 2, 3, 4, 5]
+
 # ---------------------------------------------------------------------------
 # Database helpers
 # ---------------------------------------------------------------------------
@@ -184,6 +185,9 @@ def init_db():
     db.commit()
     db.close()
 
+
+# Ensure database tables exist on startup
+init_db()
 
 # ---------------------------------------------------------------------------
 # Small utilities
@@ -248,6 +252,55 @@ def row_to_ticket_dict(row):
         "created_at": row["created_at"],
         "replied_at": row["replied_at"],
     }
+
+
+# ---------------------------------------------------------------------------
+# Video Streaming Route (HTTP 206 Range Requests for Safari/iOS)
+# ---------------------------------------------------------------------------
+
+@app.route("/static/videos/<path:filename>")
+def stream_video(filename):
+    """Serve videos with HTTP 206 Partial Content range request support."""
+    video_dir = os.path.join(app.root_path, "static", "videos")
+    file_path = os.path.join(video_dir, filename)
+
+    if not os.path.isfile(file_path):
+        return "Video not found", 404
+
+    file_size = os.path.getsize(file_path)
+    range_header = request.headers.get("Range", None)
+
+    if not range_header:
+        return send_file(file_path, mimetype="video/mp4")
+
+    match = re.search(r"bytes=(\d+)-(\d*)", range_header)
+    if not match:
+        return send_file(file_path, mimetype="video/mp4")
+
+    start = int(match.group(1))
+    end = int(match.group(2)) if match.group(2) else file_size - 1
+
+    if start >= file_size:
+        return Response("Requested range not satisfiable", status=416)
+
+    length = end - start + 1
+
+    with open(file_path, "rb") as f:
+        f.seek(start)
+        data = f.read(length)
+
+    response = Response(
+        data,
+        206,
+        mimetype="video/mp4",
+        content_type="video/mp4",
+        direct_passthrough=True,
+    )
+    response.headers.add("Content-Range", f"bytes {start}-{end}/{file_size}")
+    response.headers.add("Accept-Ranges", "bytes")
+    response.headers.add("Content-Length", str(length))
+
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -406,7 +459,7 @@ def create_booking():
     if errors:
         return jsonify({"success": False, "errors": errors}), 400
 
-        zone = ZONES[zone_id]
+    zone = ZONES[zone_id]
     zone_cost = round(zone["price_per_game"] * int(duration_min), 2)
 
     resolved_drinks = []
@@ -658,5 +711,4 @@ def admin_reply_ticket(ticket_id):
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True, host="0.0.0.0", port=5000)
