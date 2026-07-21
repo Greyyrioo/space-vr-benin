@@ -1,270 +1,496 @@
 // ============================================================================
-// SpaceVR — admin.js
-// Powers the private /admin control center: live booking table, stats,
-// and the two-way support ticket hub.
+// SpaceVR -- main.js
+// Handles: zone modals, the Fuel Bar quantity selector, the booking form,
+// the checkout / bank-transfer step, and the support contact form.
 // ============================================================================
 
 (function () {
   "use strict";
 
+  const DATA = window.SPACEVR_DATA;
+
+  // bookingState holds everything that needs to travel with the booking
+  // payload: which zone was picked from a zone card, and how many of each
+  // Fuel Bar item the user has selected.
+  const bookingState = {
+    zoneId: null,
+    drinks: {}, // { item_id: qty }
+  };
+
   document.addEventListener("DOMContentLoaded", () => {
-    loadBookings();
-    loadTickets();
+    const yearEl = document.getElementById("year");
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+    const today = new Date().toISOString().split("T")[0];
+    const dateInput = document.getElementById("bookingDate");
+    if (dateInput) dateInput.min = today;
+
+    wireBookingFormEvents();
+    wireBookingFormSubmit();
+    wireSupportForm();
+    wireCheckout();
   });
 
-  window.switchPanel = function (panelId, btn) {
-    document.querySelectorAll(".admin-panel").forEach((p) => p.classList.remove("active"));
-    document.getElementById(panelId).classList.add("active");
-    document.querySelectorAll(".admin-nav button").forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
-  };
-
-  const STATUS_LABELS = {
-    pending_payment: "Pending Payment",
-    awaiting_verification: "Awaiting Verification",
-    confirmed: "Confirmed",
-    cancelled: "Cancelled",
-  };
-
-  const STATUS_COLORS = {
-    pending_payment: "background: rgba(255,178,56,0.15); color:#ffb238; border:1px solid rgba(255,178,56,0.4);",
-    awaiting_verification: "background: rgba(255,178,56,0.15); color:#ffb238; border:1px solid rgba(255,178,56,0.4);",
-    confirmed: "background: rgba(46,230,166,0.12); color:#2ee6a6; border:1px solid rgba(46,230,166,0.4);",
-    cancelled: "background: rgba(255,59,92,0.12); color:#ff3b5c; border:1px solid rgba(255,59,92,0.4);",
-  };
-
   // --------------------------------------------------------------------
-  // Bookings
+  // Modal helpers
   // --------------------------------------------------------------------
 
-  window.loadBookings = async function () {
-    try {
-      const res = await fetch("/admin/api/bookings");
-      if (res.status === 401 || res.redirected) {
-        window.location.href = "/admin/login";
-        return;
-      }
-      const data = await res.json();
-      renderStats(data.stats);
-      renderBookingsTable(data.bookings, "bookingsTableWrap");
-      renderBookingsTable(data.bookings.slice(0, 6), "recentBookingsTableWrap");
-      document.getElementById("bookingsCountBadge").textContent = data.stats.total_bookings;
-    } catch (err) {
-      showToast("Could not load bookings.", "error");
-    }
+  window.closeModal = function (id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("active");
+    document.body.style.overflow = "";
   };
 
-  function renderStats(stats) {
-    document.getElementById("statTotalBookings").textContent = stats.total_bookings;
-    document.getElementById("statRevenue").textContent = `₦${Number(stats.total_revenue || 0).toLocaleString()}`;
-    document.getElementById("statAwaiting").textContent = stats.pending_verification;
-    document.getElementById("statPendingPayment").textContent = stats.pending_payment;
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+    document.body.style.overflow = "hidden";
   }
 
-  function renderBookingsTable(bookings, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
+  // --------------------------------------------------------------------
+  // Zone modal (game listing OR fuel bar menu)
+  // --------------------------------------------------------------------
 
-    if (bookings.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="icon">◍</div>
-          <div>No bookings yet. New reservations will appear here in real time.</div>
-        </div>
-      `;
-      return;
+  window.openZoneModal = function (zoneId) {
+    const zone = DATA.zones[zoneId];
+    if (!zone) return;
+
+    document.getElementById("zoneModalEyebrow").textContent =
+      zoneId === "fuel-bar" ? "Fuel Bar Menu" : "Zone Briefing";
+    document.getElementById("zoneModalTitle").textContent = zone.name;
+    document.getElementById("zoneModalTagline").textContent = zone.tagline;
+
+    const gameListEl = document.getElementById("zoneModalGames");
+    const fuelContainerEl = document.getElementById("fuelMenuContainer");
+    const primaryBtn = document.getElementById("zoneModalPrimaryBtn");
+
+    if (zoneId === "fuel-bar") {
+      gameListEl.style.display = "none";
+      gameListEl.innerHTML = "";
+      fuelContainerEl.style.display = "block";
+      renderFuelMenu(fuelContainerEl);
+
+      primaryBtn.textContent = "Add To Booking";
+      primaryBtn.onclick = function () {
+        closeModal("zoneModal");
+        openBookingModal();
+      };
+    } else {
+      fuelContainerEl.style.display = "none";
+      fuelContainerEl.innerHTML = "";
+      gameListEl.style.display = "grid";
+      gameListEl.innerHTML = zone.games
+        .map(
+          (g) =>
+            `<li style="cursor: pointer;" onclick="selectGameAndBook('${zoneId}', '${escapeHtml(
+              g
+            )}')">▸ ${escapeHtml(g)}</li>`
+        )
+        .join("");
+
+      primaryBtn.textContent = "Book This Zone";
+      primaryBtn.onclick = function () {
+        selectZoneAndBook(zoneId);
+      };
     }
 
-    const rows = bookings
-      .map((b) => {
-        const drinksHtml =
-          b.drinks && b.drinks.length > 0
-            ? b.drinks.map((d) => `<span class="drink-line">${d.qty} × ${escapeHtml(d.name)}</span>`).join("")
-            : "<span class=\"drink-line\">—</span>";
+    openModal("zoneModal");
+  };
 
-        const canConfirm = b.status === "awaiting_verification";
-        const canCancel = b.status !== "cancelled" && b.status !== "confirmed";
+  window.selectZoneAndBook = function (zoneId) {
+    bookingState.zoneId = zoneId;
+    closeModal("zoneModal");
+    openBookingModal();
 
+    const zoneSelect =
+      document.getElementById("bookingZone") ||
+      document.getElementById("zone_select") ||
+      document.querySelector("select[name='zone_id']");
+
+    if (zoneSelect) {
+      zoneSelect.value = zoneId;
+      zoneSelect.dispatchEvent(new Event("change"));
+    }
+  };
+
+  window.selectGameAndBook = function (zoneId, gameName) {
+    selectZoneAndBook(zoneId);
+
+    const gameSelect =
+      document.getElementById("bookingGame") ||
+      document.getElementById("game_select") ||
+      document.querySelector("select[name='game']");
+
+    if (gameSelect) {
+      gameSelect.value = gameName;
+      gameSelect.dispatchEvent(new Event("change"));
+    }
+  };
+
+  function renderFuelMenu(container) {
+    const menu = DATA.fuelBarMenu;
+    const rows = Object.keys(menu)
+      .map((itemId) => {
+        const item = menu[itemId];
+        const qty = bookingState.drinks[itemId] || 0;
         return `
-          <tr>
-            <td><span class="ref-tag">${b.ref_id}</span></td>
-            <td>${escapeHtml(b.customer_name)}<br><span style="color:var(--text-faint); font-size:12px;">${escapeHtml(b.phone)} · ${escapeHtml(b.email)}</span></td>
-            <td>${escapeHtml(b.zone_name)}</td>
-            <td>${b.duration_min} min</td>
-            <td>${escapeHtml(b.session_date)}<br><span style="color:var(--text-faint); font-size:12px;">${escapeHtml(b.time_slot)}</span></td>
-            <td class="drinks-cell">${drinksHtml}</td>
-            <td>₦${b.total_cost.toFixed(2)}</td>
-            <td><span class="status-badge" style="${STATUS_COLORS[b.status] || ""}">${STATUS_LABELS[b.status] || b.status}</span></td>
-            <td>
-              <div class="row-actions">
-                ${canConfirm ? `<button class="confirm-btn" onclick="confirmBooking('${b.ref_id}')">Confirm</button>` : ""}
-                ${canCancel ? `<button class="cancel-btn" onclick="cancelBooking('${b.ref_id}')">Cancel</button>` : ""}
-              </div>
-            </td>
-          </tr>
+          <div class="fuel-item" data-item-id="${itemId}">
+            <div class="fuel-item-info">
+              <div class="fuel-name">${escapeHtml(item.name)}</div>
+              <div class="fuel-price">₦${item.price.toFixed(2)} each</div>
+            </div>
+            <div class="qty-control">
+              <button type="button" class="qty-btn" data-action="dec">−</button>
+              <span class="qty-value">${qty}</span>
+              <button type="button" class="qty-btn" data-action="inc">+</button>
+            </div>
+          </div>
         `;
       })
       .join("");
 
     container.innerHTML = `
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Ref</th><th>Customer</th><th>Zone</th><th>Duration</th><th>Session</th>
-            <th>Fuel Bar</th><th>Total</th><th>Status</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="fuel-menu">${rows}</div>
+      <div class="fuel-summary">
+        <span>Fuel Bar subtotal</span>
+        <span class="fuel-total" id="fuelSubtotal">₦0.00</span>
+      </div>
     `;
+
+    container.querySelectorAll(".fuel-item").forEach((rowEl) => {
+      const itemId = rowEl.getAttribute("data-item-id");
+      rowEl.querySelectorAll(".qty-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const current = bookingState.drinks[itemId] || 0;
+          const action = btn.getAttribute("data-action");
+          const next = action === "inc" ? current + 1 : Math.max(0, current - 1);
+
+          if (next === 0) {
+            delete bookingState.drinks[itemId];
+          } else {
+            bookingState.drinks[itemId] = next;
+          }
+
+          rowEl.querySelector(".qty-value").textContent = next;
+          updateFuelSubtotal();
+        });
+      });
+    });
+
+    updateFuelSubtotal();
   }
 
-  window.confirmBooking = async function (refId) {
-    try {
-      const res = await fetch(`/admin/api/bookings/${refId}/confirm`, { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`Booking ${refId} confirmed — customer notified by email.`, "success");
-        loadBookings();
-      } else {
-        showToast(data.error || "Could not confirm booking.", "error");
-      }
-    } catch (err) {
-      showToast("Network error — please try again.", "error");
-    }
-  };
+  function updateFuelSubtotal() {
+    const subtotalEl = document.getElementById("fuelSubtotal");
+    if (!subtotalEl) return;
+    subtotalEl.textContent = `₦${getDrinksTotal().toFixed(2)}`;
+  }
 
-  window.cancelBooking = async function (refId) {
-    if (!confirm(`Cancel booking ${refId}? This cannot be undone.`)) return;
-    try {
-      const res = await fetch(`/admin/api/bookings/${refId}/cancel`, { method: "POST" });
-      const data = await res.json();
-      if (data.success) {
-        showToast(`Booking ${refId} cancelled.`, "success");
-        loadBookings();
-      } else {
-        showToast(data.error || "Could not cancel booking.", "error");
-      }
-    } catch (err) {
-      showToast("Network error — please try again.", "error");
-    }
-  };
+  function getDrinksTotal() {
+    let total = 0;
+    Object.keys(bookingState.drinks).forEach((itemId) => {
+      const qty = bookingState.drinks[itemId];
+      const item = DATA.fuelBarMenu[itemId];
+      if (item) total += item.price * qty;
+    });
+    return total;
+  }
+
+  function getDrinksPayload() {
+    return Object.keys(bookingState.drinks).map((itemId) => ({
+      item_id: itemId,
+      qty: bookingState.drinks[itemId],
+    }));
+  }
 
   // --------------------------------------------------------------------
-  // Support tickets
+  // Booking modal
   // --------------------------------------------------------------------
 
-  window.loadTickets = async function () {
-    try {
-      const res = await fetch("/admin/api/tickets");
-      if (res.status === 401 || res.redirected) {
-        window.location.href = "/admin/login";
-        return;
+  window.openBookingModal = function () {
+    const zoneSelect = document.getElementById("bookingZone");
+    const banner = document.getElementById("selectedZoneBanner");
+    const bannerLabel = document.getElementById("selectedZoneLabel");
+
+    if (zoneSelect) {
+      if (bookingState.zoneId && DATA.zones[bookingState.zoneId]) {
+        zoneSelect.value = bookingState.zoneId;
+        if (banner) banner.style.display = "flex";
+        if (bannerLabel) bannerLabel.textContent = `Zone selected: ${DATA.zones[bookingState.zoneId].name}`;
+      } else if (zoneSelect.value && DATA.zones[zoneSelect.value]) {
+        if (banner) banner.style.display = "flex";
+        if (bannerLabel) bannerLabel.textContent = `Zone selected: ${DATA.zones[zoneSelect.value].name}`;
+      } else {
+        if (banner) banner.style.display = "none";
       }
-      const data = await res.json();
-      renderTickets(data.tickets);
-      document.getElementById("ticketsCountBadge").textContent = data.open_count;
-      document.getElementById("statOpenTickets").textContent = data.open_count;
-    } catch (err) {
-      showToast("Could not load support tickets.", "error");
     }
+
+    renderBookingDrinksList();
+    recalculateCosts();
+    openModal("bookingModal");
   };
 
-  function renderTickets(tickets) {
-    const container = document.getElementById("ticketList");
-    if (tickets.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="icon">✉</div>
-          <div>No support tickets yet. Customer messages will appear here.</div>
-        </div>
-      `;
+  function renderBookingDrinksList() {
+    const el = document.getElementById("bookingDrinksList");
+    if (!el) return;
+
+    const itemIds = Object.keys(bookingState.drinks);
+    if (itemIds.length === 0) {
+      el.innerHTML = "";
       return;
     }
-
-    container.innerHTML = tickets
-      .map((t) => {
-        const isAnswered = t.status === "answered";
-        return `
-          <div class="ticket-card" data-ticket-id="${t.id}">
-            <div class="ticket-top">
-              <div>
-                <div class="ticket-subject">${escapeHtml(t.subject)}</div>
-                <div class="ticket-meta">${escapeHtml(t.name)} · ${escapeHtml(t.email)}${t.phone ? " · " + escapeHtml(t.phone) : ""}</div>
-              </div>
-              <span class="status-badge" style="${isAnswered ? STATUS_COLORS.confirmed : STATUS_COLORS.pending_payment}">
-                ${isAnswered ? "Answered" : "Open"}
-              </span>
-            </div>
-            <div class="ticket-message">${escapeHtml(t.message)}</div>
-
-            ${
-              isAnswered
-                ? `<div class="existing-reply"><span class="reply-label">Your Reply</span>${escapeHtml(t.admin_reply)}</div>`
-                : `
-                  <div style="margin-top:14px;">
-                    <button class="btn btn-ghost btn-small" onclick="toggleReplyBox(${t.id})">Write a Reply</button>
-                  </div>
-                  <div class="ticket-reply-box" id="replyBox-${t.id}">
-                    <textarea id="replyText-${t.id}" placeholder="Type your response to the customer…"></textarea>
-                    <button class="btn btn-primary btn-small" style="justify-self:start;" onclick="submitReply(${t.id})">Send Reply By Email</button>
-                  </div>
-                `
-            }
-          </div>
-        `;
+    const lines = itemIds
+      .map((itemId) => {
+        const item = DATA.fuelBarMenu[itemId];
+        const qty = bookingState.drinks[itemId];
+        return `<div>${qty} × <span>${escapeHtml(item.name)}</span></div>`;
       })
       .join("");
+    el.innerHTML = `<strong>Fuel Bar items added:</strong>${lines}`;
   }
 
-  window.toggleReplyBox = function (ticketId) {
-    const box = document.getElementById(`replyBox-${ticketId}`);
-    box.classList.toggle("active");
-  };
+  function wireBookingFormEvents() {
+    const zoneSelect = document.getElementById("bookingZone");
+    const durationSelect = document.getElementById("bookingDuration");
+    if (!zoneSelect || !durationSelect) return;
 
-  window.submitReply = async function (ticketId) {
-    const textarea = document.getElementById(`replyText-${ticketId}`);
-    const reply = textarea.value.trim();
-    if (reply.length === 0) {
-      showToast("Please write a reply before sending.", "error");
-      return;
-    }
-
-    try {
-      const res = await fetch(`/admin/api/tickets/${ticketId}/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reply }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        showToast("Reply sent to customer's inbox.", "success");
-        loadTickets();
+    zoneSelect.addEventListener("change", () => {
+      bookingState.zoneId = zoneSelect.value || null;
+      const banner = document.getElementById("selectedZoneBanner");
+      const bannerLabel = document.getElementById("selectedZoneLabel");
+      if (zoneSelect.value && DATA.zones[zoneSelect.value]) {
+        if (banner) banner.style.display = "flex";
+        if (bannerLabel) bannerLabel.textContent = `Zone selected: ${DATA.zones[zoneSelect.value].name}`;
       } else {
-        showToast(data.error || "Could not send reply.", "error");
+        if (banner) banner.style.display = "none";
       }
-    } catch (err) {
-      showToast("Network error — please try again.", "error");
-    }
-  };
+      recalculateCosts();
+    });
+
+    durationSelect.addEventListener("change", recalculateCosts);
+  }
+
+  function recalculateCosts() {
+    const zoneSelect = document.getElementById("bookingZone");
+    const durationSelect = document.getElementById("bookingDuration");
+    if (!zoneSelect || !durationSelect) return;
+
+    const zoneId = zoneSelect.value;
+    const durationMin = parseInt(durationSelect.value, 10) || 0;
+    const zone = zoneId ? DATA.zones[zoneId] : null;
+
+    const zoneCost = zone ? (zone.price_per_game || 3000) * durationMin : 0;
+    const drinksCost = getDrinksTotal();
+    const total = zoneCost + drinksCost;
+
+    const zoneCostEl = document.getElementById("summaryZoneCost");
+    const drinksCostEl = document.getElementById("summaryDrinksCost");
+    const totalEl = document.getElementById("summaryTotal");
+
+    if (zoneCostEl) zoneCostEl.textContent = `₦${zoneCost.toLocaleString()}`;
+    if (drinksCostEl) drinksCostEl.textContent = `₦${drinksCost.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `₦${total.toLocaleString()}`;
+  }
+
+  function wireBookingFormSubmit() {
+    const form = document.getElementById("bookingForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const errorEl = document.getElementById("bookingError");
+      if (errorEl) {
+        errorEl.classList.remove("active");
+        errorEl.textContent = "";
+      }
+
+      const payload = {
+        zone_id: document.getElementById("bookingZone").value,
+        duration_min: parseInt(document.getElementById("bookingDuration").value, 10),
+        session_date: document.getElementById("bookingDate").value,
+        time_slot: document.getElementById("bookingTimeSlot").value,
+        customer_name: document.getElementById("bookingName").value.trim(),
+        phone: document.getElementById("bookingPhone").value.trim(),
+        email: document.getElementById("bookingEmail").value.trim(),
+        drinks: getDrinksPayload(),
+      };
+
+      const submitBtn = form.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting…";
+
+      try {
+        const res = await fetch("/book", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          const messages =
+            (data.errors && data.errors.join(" ")) ||
+            "Something went wrong. Please check your details.";
+          if (errorEl) {
+            errorEl.textContent = messages;
+            errorEl.classList.add("active");
+          }
+          return;
+        }
+
+        window.currentBooking = data.booking;
+        window.currentBankDetails = data.bank_details;
+        closeModal("bookingModal");
+        renderCheckout(data.booking, data.bank_details);
+        openModal("checkoutModal");
+        showToast(
+          "Booking received -- complete your transfer to activate your pod.",
+          "success"
+        );
+      } catch (err) {
+        if (errorEl) {
+          errorEl.textContent = "Network error -- please try again.";
+          errorEl.classList.add("active");
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Continue to Payment";
+      }
+    });
+  }
 
   // --------------------------------------------------------------------
-  // Utilities
+  // Checkout modal
+  // --------------------------------------------------------------------
+
+  function renderCheckout(booking, bankDetails) {
+    document.getElementById("checkoutRef").textContent = booking.ref_id;
+    document.getElementById("bankName").textContent = bankDetails.bank_name;
+    document.getElementById("bankAccountName").textContent = bankDetails.account_name;
+    document.getElementById("bankAccountNumber").textContent = bankDetails.account_number;
+    document.getElementById("bankRoutingNumber").textContent = bankDetails.routing_number;
+    document.getElementById("checkoutTotal").textContent = `₦${booking.total_cost.toFixed(2)}`;
+    document.getElementById(
+      "checkoutInstructions"
+    ).textContent = `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`;
+  }
+
+  function wireCheckout() {
+    const btn = document.getElementById("markPaidBtn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async () => {
+      if (!window.currentBooking) return;
+      btn.disabled = true;
+      btn.textContent = "Confirming…";
+
+      try {
+        const res = await fetch(
+          `/book/${window.currentBooking.ref_id}/mark-paid`,
+          {
+            method: "POST",
+          }
+        );
+        const data = await res.json();
+        if (data.success) {
+          window.location.href = `/receipt/${window.currentBooking.ref_id}`;
+        } else {
+          showToast(
+            "Could not confirm your transfer -- please try again.",
+            "error"
+          );
+        }
+      } catch (err) {
+        showToast("Network error -- please try again.", "error");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "I've Completed The Transfer";
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------
+  // Support / contact form
+  // --------------------------------------------------------------------
+
+  function wireSupportForm() {
+    const form = document.getElementById("supportForm");
+    if (!form) return;
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const errorEl = document.getElementById("supportError");
+      if (errorEl) {
+        errorEl.classList.remove("active");
+        errorEl.textContent = "";
+      }
+
+      const payload = {
+        name: document.getElementById("supportName").value.trim(),
+        email: document.getElementById("supportEmail").value.trim(),
+        phone: document.getElementById("supportPhone").value.trim(),
+        subject: document.getElementById("supportSubject").value.trim(),
+        message: document.getElementById("supportMessage").value.trim(),
+      };
+
+      const submitBtn = form.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending…";
+
+      try {
+        const res = await fetch("/support/ticket", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          const messages =
+            (data.errors && data.errors.join(" ")) ||
+            "Something went wrong. Please check your details.";
+          if (errorEl) {
+            errorEl.textContent = messages;
+            errorEl.classList.add("active");
+          }
+          return;
+        }
+
+        form.reset();
+        showToast("Message sent -- our team will reply by email shortly.", "success");
+      } catch (err) {
+        if (errorEl) {
+          errorEl.textContent = "Network error -- please try again.";
+          errorEl.classList.add("active");
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Send Message";
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------
+  // Small utilities
   // --------------------------------------------------------------------
 
   let toastTimeout = null;
   function showToast(message, type) {
     const toast = document.getElementById("toast");
+    if (!toast) return;
     toast.textContent = message;
     toast.className = "toast show " + (type || "");
     clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(() => toast.classList.remove("show"), 4500);
+    toastTimeout = setTimeout(() => {
+      toast.classList.remove("show");
+    }, 4500);
   }
   window.showToast = showToast;
 
   function escapeHtml(str) {
+    if (!str) return "";
     const div = document.createElement("div");
-    div.textContent = str == null ? "" : String(str);
+    div.textContent = str;
     return div.innerHTML;
   }
 })();
