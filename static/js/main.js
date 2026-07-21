@@ -1,5 +1,5 @@
 // ============================================================================
-// SpaceVR — main.js
+// SpaceVR -- main.js
 // Handles: zone modals, the Fuel Bar quantity selector, the booking form,
 // the checkout / bank-transfer step, and the support contact form.
 // ============================================================================
@@ -76,46 +76,49 @@
     } else {
       fuelContainerEl.style.display = "none";
       fuelContainerEl.innerHTML = "";
-                gameListEl.style.display = "grid";
-        gameListEl.innerHTML = zone.games
-            .map(function(g) {
-                return '<li style="cursor: pointer;" onclick="selectGameAndBook(\'' + zoneId + '\', \'' + escapeHtml(g) + '\')">▸ ' + escapeHtml(g) + '</li>';
-            })
-            .join("");
+      gameListEl.style.display = "grid";
+      gameListEl.innerHTML = zone.games
+        .map(
+          (g) =>
+            `<li style="cursor: pointer;" onclick="selectGameAndBook('${zoneId}', '${escapeHtml(
+              g
+            )}')">▸ ${escapeHtml(g)}</li>`
+        )
+        .join("");
 
-        primaryBtn.textContent = "Book This Zone";
-        primaryBtn.onclick = function () {
-            selectZoneAndBook(zoneId);
-        };
+      primaryBtn.textContent = "Book This Zone";
+      primaryBtn.onclick = function () {
+        selectZoneAndBook(zoneId);
+      };
+    }
 
-
-        primaryBtn.textContent = "Book This Zone";
-        primaryBtn.onclick = function () {
-            selectZoneAndBook(zoneId);
-        };
-   
     openModal("zoneModal");
   };
-window.selectZoneAndBook = function (zoneId) {
+
+  window.selectZoneAndBook = function (zoneId) {
     bookingState.zoneId = zoneId;
     closeModal("zoneModal");
     openBookingModal();
 
-    const zoneSelect = document.getElementById("zone_select") || document.querySelector("select[name='zone_id']");
+    const zoneSelect =
+      document.getElementById("zone_select") ||
+      document.querySelector("select[name='zone_id']");
     if (zoneSelect) {
-        zoneSelect.value = zoneId;
-        zoneSelect.dispatchEvent(new Event("change"));
+      zoneSelect.value = zoneId;
+      zoneSelect.dispatchEvent(new Event("change"));
     }
-};
+  };
 
-window.selectGameAndBook = function (zoneId, gameName) {
+  window.selectGameAndBook = function (zoneId, gameName) {
     selectZoneAndBook(zoneId);
 
-    const gameSelect = document.getElementById("game_select") || document.querySelector("select[name='game']");
+    const gameSelect =
+      document.getElementById("game_select") ||
+      document.querySelector("select[name='game']");
     if (gameSelect) {
-        gameSelect.value = gameName;
+      gameSelect.value = gameName;
     }
-};
+  };
 
   function renderFuelMenu(container) {
     const menu = DATA.fuelBarMenu;
@@ -269,11 +272,10 @@ window.selectGameAndBook = function (zoneId, gameName) {
     const drinksCost = getDrinksTotal();
     const total = zoneCost + drinksCost;
 
-    document.getElementById('summaryZoneCost').textContent = `₦${zoneCost.toLocaleString()}`;
-    document.getElementById('summaryDrinksCost').textContent = `₦${drinksCost.toLocaleString()}`;
-    document.getElementById('summaryTotal').textContent = `₦${total.toLocaleString()}`;
-}
-
+    document.getElementById("summaryZoneCost").textContent = `₦${zoneCost.toLocaleString()}`;
+    document.getElementById("summaryDrinksCost").textContent = `₦${drinksCost.toLocaleString()}`;
+    document.getElementById("summaryTotal").textContent = `₦${total.toLocaleString()}`;
+  }
 
   function wireBookingFormSubmit() {
     const form = document.getElementById("bookingForm");
@@ -309,7 +311,9 @@ window.selectGameAndBook = function (zoneId, gameName) {
         const data = await res.json();
 
         if (!res.ok || !data.success) {
-          const messages = (data.errors && data.errors.join(" ")) || "Something went wrong. Please check your details.";
+          const messages =
+            (data.errors && data.errors.join(" ")) ||
+            "Something went wrong. Please check your details.";
           errorEl.textContent = messages;
           errorEl.classList.add("active");
           return;
@@ -320,9 +324,12 @@ window.selectGameAndBook = function (zoneId, gameName) {
         closeModal("bookingModal");
         renderCheckout(data.booking, data.bank_details);
         openModal("checkoutModal");
-        showToast("Booking received — complete your transfer to activate your pod.", "success");
+        showToast(
+          "Booking received -- complete your transfer to activate your pod.",
+          "success"
+        );
       } catch (err) {
-        errorEl.textContent = "Network error — please try again.";
+        errorEl.textContent = "Network error -- please try again.";
         errorEl.classList.add("active");
       } finally {
         submitBtn.disabled = false;
@@ -342,8 +349,9 @@ window.selectGameAndBook = function (zoneId, gameName) {
     document.getElementById("bankAccountNumber").textContent = bankDetails.account_number;
     document.getElementById("bankRoutingNumber").textContent = bankDetails.routing_number;
     document.getElementById("checkoutTotal").textContent = `₦${booking.total_cost.toFixed(2)}`;
-    document.getElementById("checkoutInstructions").textContent =
-      `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`;
+    document.getElementById(
+      "checkoutInstructions"
+    ).textContent = `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`;
   }
 
   function wireCheckout() {
@@ -356,17 +364,23 @@ window.selectGameAndBook = function (zoneId, gameName) {
       btn.textContent = "Confirming…";
 
       try {
-        const res = await fetch(`/book/${window.currentBooking.ref_id}/mark-paid`, {
-          method: "POST",
-        });
+        const res = await fetch(
+          `/book/${window.currentBooking.ref_id}/mark-paid`,
+          {
+            method: "POST",
+          }
+        );
         const data = await res.json();
         if (data.success) {
           window.location.href = `/receipt/${window.currentBooking.ref_id}`;
         } else {
-          showToast("Could not confirm your transfer — please try again.", "error");
+          showToast(
+            "Could not confirm your transfer -- please try again.",
+            "error"
+          );
         }
       } catch (err) {
-        showToast("Network error — please try again.", "error");
+        showToast("Network error -- please try again.", "error");
       } finally {
         btn.disabled = false;
         btn.textContent = "I've Completed The Transfer";
@@ -409,16 +423,18 @@ window.selectGameAndBook = function (zoneId, gameName) {
         const data = await res.json();
 
         if (!res.ok || !data.success) {
-          const messages = (data.errors && data.errors.join(" ")) || "Something went wrong. Please check your details.";
+          const messages =
+            (data.errors && data.errors.join(" ")) ||
+            "Something went wrong. Please check your details.";
           errorEl.textContent = messages;
           errorEl.classList.add("active");
           return;
         }
 
         form.reset();
-        showToast("Message sent — our team will reply by email shortly.", "success");
+        showToast("Message sent -- our team will reply by email shortly.", "success");
       } catch (err) {
-        errorEl.textContent = "Network error — please try again.";
+        errorEl.textContent = "Network error -- please try again.";
         errorEl.classList.add("active");
       } finally {
         submitBtn.disabled = false;
