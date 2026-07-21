@@ -36,12 +36,14 @@
   // --------------------------------------------------------------------
 
   window.closeModal = function (id) {
-    document.getElementById(id).classList.remove("active");
+    const el = document.getElementById(id);
+    if (el) el.classList.remove("active");
     document.body.style.overflow = "";
   };
 
   function openModal(id) {
-    document.getElementById(id).classList.add("active");
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
     document.body.style.overflow = "hidden";
   }
 
@@ -101,8 +103,10 @@
     openBookingModal();
 
     const zoneSelect =
+      document.getElementById("bookingZone") ||
       document.getElementById("zone_select") ||
       document.querySelector("select[name='zone_id']");
+
     if (zoneSelect) {
       zoneSelect.value = zoneId;
       zoneSelect.dispatchEvent(new Event("change"));
@@ -113,10 +117,13 @@
     selectZoneAndBook(zoneId);
 
     const gameSelect =
+      document.getElementById("bookingGame") ||
       document.getElementById("game_select") ||
       document.querySelector("select[name='game']");
+
     if (gameSelect) {
       gameSelect.value = gameName;
+      gameSelect.dispatchEvent(new Event("change"));
     }
   };
 
@@ -146,7 +153,7 @@
       <div class="fuel-menu">${rows}</div>
       <div class="fuel-summary">
         <span>Fuel Bar subtotal</span>
-        <span class="fuel-total" id="fuelSubtotal">$0.00</span>
+        <span class="fuel-total" id="fuelSubtotal">₦0.00</span>
       </div>
     `;
 
@@ -205,15 +212,17 @@
     const banner = document.getElementById("selectedZoneBanner");
     const bannerLabel = document.getElementById("selectedZoneLabel");
 
-    if (bookingState.zoneId && DATA.zones[bookingState.zoneId]) {
-      zoneSelect.value = bookingState.zoneId;
-      banner.style.display = "flex";
-      bannerLabel.textContent = `Zone selected: ${DATA.zones[bookingState.zoneId].name}`;
-    } else if (zoneSelect.value) {
-      banner.style.display = "flex";
-      bannerLabel.textContent = `Zone selected: ${DATA.zones[zoneSelect.value].name}`;
-    } else {
-      banner.style.display = "none";
+    if (zoneSelect) {
+      if (bookingState.zoneId && DATA.zones[bookingState.zoneId]) {
+        zoneSelect.value = bookingState.zoneId;
+        if (banner) banner.style.display = "flex";
+        if (bannerLabel) bannerLabel.textContent = `Zone selected: ${DATA.zones[bookingState.zoneId].name}`;
+      } else if (zoneSelect.value && DATA.zones[zoneSelect.value]) {
+        if (banner) banner.style.display = "flex";
+        if (bannerLabel) bannerLabel.textContent = `Zone selected: ${DATA.zones[zoneSelect.value].name}`;
+      } else {
+        if (banner) banner.style.display = "none";
+      }
     }
 
     renderBookingDrinksList();
@@ -223,6 +232,8 @@
 
   function renderBookingDrinksList() {
     const el = document.getElementById("bookingDrinksList");
+    if (!el) return;
+
     const itemIds = Object.keys(bookingState.drinks);
     if (itemIds.length === 0) {
       el.innerHTML = "";
@@ -247,11 +258,11 @@
       bookingState.zoneId = zoneSelect.value || null;
       const banner = document.getElementById("selectedZoneBanner");
       const bannerLabel = document.getElementById("selectedZoneLabel");
-      if (zoneSelect.value) {
-        banner.style.display = "flex";
-        bannerLabel.textContent = `Zone selected: ${DATA.zones[zoneSelect.value].name}`;
+      if (zoneSelect.value && DATA.zones[zoneSelect.value]) {
+        if (banner) banner.style.display = "flex";
+        if (bannerLabel) bannerLabel.textContent = `Zone selected: ${DATA.zones[zoneSelect.value].name}`;
       } else {
-        banner.style.display = "none";
+        if (banner) banner.style.display = "none";
       }
       recalculateCosts();
     });
@@ -272,9 +283,13 @@
     const drinksCost = getDrinksTotal();
     const total = zoneCost + drinksCost;
 
-    document.getElementById("summaryZoneCost").textContent = `₦${zoneCost.toLocaleString()}`;
-    document.getElementById("summaryDrinksCost").textContent = `₦${drinksCost.toLocaleString()}`;
-    document.getElementById("summaryTotal").textContent = `₦${total.toLocaleString()}`;
+    const zoneCostEl = document.getElementById("summaryZoneCost");
+    const drinksCostEl = document.getElementById("summaryDrinksCost");
+    const totalEl = document.getElementById("summaryTotal");
+
+    if (zoneCostEl) zoneCostEl.textContent = `₦${zoneCost.toLocaleString()}`;
+    if (drinksCostEl) drinksCostEl.textContent = `₦${drinksCost.toLocaleString()}`;
+    if (totalEl) totalEl.textContent = `₦${total.toLocaleString()}`;
   }
 
   function wireBookingFormSubmit() {
@@ -284,8 +299,10 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const errorEl = document.getElementById("bookingError");
-      errorEl.classList.remove("active");
-      errorEl.textContent = "";
+      if (errorEl) {
+        errorEl.classList.remove("active");
+        errorEl.textContent = "";
+      }
 
       const payload = {
         zone_id: document.getElementById("bookingZone").value,
@@ -314,8 +331,10 @@
           const messages =
             (data.errors && data.errors.join(" ")) ||
             "Something went wrong. Please check your details.";
-          errorEl.textContent = messages;
-          errorEl.classList.add("active");
+          if (errorEl) {
+            errorEl.textContent = messages;
+            errorEl.classList.add("active");
+          }
           return;
         }
 
@@ -329,8 +348,10 @@
           "success"
         );
       } catch (err) {
-        errorEl.textContent = "Network error -- please try again.";
-        errorEl.classList.add("active");
+        if (errorEl) {
+          errorEl.textContent = "Network error -- please try again.";
+          errorEl.classList.add("active");
+        }
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "Continue to Payment";
@@ -399,8 +420,10 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       const errorEl = document.getElementById("supportError");
-      errorEl.classList.remove("active");
-      errorEl.textContent = "";
+      if (errorEl) {
+        errorEl.classList.remove("active");
+        errorEl.textContent = "";
+      }
 
       const payload = {
         name: document.getElementById("supportName").value.trim(),
@@ -426,16 +449,20 @@
           const messages =
             (data.errors && data.errors.join(" ")) ||
             "Something went wrong. Please check your details.";
-          errorEl.textContent = messages;
-          errorEl.classList.add("active");
+          if (errorEl) {
+            errorEl.textContent = messages;
+            errorEl.classList.add("active");
+          }
           return;
         }
 
         form.reset();
         showToast("Message sent -- our team will reply by email shortly.", "success");
       } catch (err) {
-        errorEl.textContent = "Network error -- please try again.";
-        errorEl.classList.add("active");
+        if (errorEl) {
+          errorEl.textContent = "Network error -- please try again.";
+          errorEl.classList.add("active");
+        }
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "Send Message";
@@ -450,6 +477,7 @@
   let toastTimeout = null;
   function showToast(message, type) {
     const toast = document.getElementById("toast");
+    if (!toast) return;
     toast.textContent = message;
     toast.className = "toast show " + (type || "");
     clearTimeout(toastTimeout);
@@ -460,6 +488,7 @@
   window.showToast = showToast;
 
   function escapeHtml(str) {
+    if (!str) return "";
     const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
