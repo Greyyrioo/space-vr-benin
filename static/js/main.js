@@ -7,7 +7,7 @@
 (function () {
   "use strict";
 
-  const DATA = window.SPACEVR_DATA;
+  const DATA = window.SPACEVR_DATA || { zones: {}, fuelBarMenu: {} };
 
   // bookingState holds everything that needs to travel with the booking
   // payload: which zone was picked from a zone card, and how many of each
@@ -322,7 +322,7 @@
         zone_id: cleanZoneId,
         duration_min: cleanDuration,
         session_date: document.getElementById("bookingDate").value,
-        time_slot: document.getElementById("bookingTimeSlot").value,
+        time_slot: document.getElementById("bookingTimeSlot") ? document.getElementById("bookingTimeSlot").value : (document.getElementById("bookingTime") ? document.getElementById("bookingTime").value : ""),
         customer_name: document.getElementById("bookingName").value.trim(),
         phone: document.getElementById("bookingPhone").value.trim(),
         email: document.getElementById("bookingEmail").value.trim(),
@@ -330,8 +330,10 @@
       };
 
       const submitBtn = form.querySelector("button[type=submit]");
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Submitting…";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Submitting…";
+      }
 
       try {
         const res = await fetch("/book", {
@@ -367,8 +369,10 @@
           errorEl.classList.add("active");
         }
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Continue to Payment";
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Continue to Payment";
+        }
       }
     });
   }
@@ -378,15 +382,20 @@
   // --------------------------------------------------------------------
 
   function renderCheckout(booking, bankDetails) {
-    document.getElementById("checkoutRef").textContent = booking.ref_id;
-    document.getElementById("bankName").textContent = bankDetails.bank_name;
-    document.getElementById("bankAccountName").textContent = bankDetails.account_name;
-    document.getElementById("bankAccountNumber").textContent = bankDetails.account_number;
-    document.getElementById("bankRoutingNumber").textContent = bankDetails.routing_number;
-    document.getElementById("checkoutTotal").textContent = `₦${(booking.total_cost || 0).toLocaleString()}`;
-    document.getElementById(
-      "checkoutInstructions"
-    ).textContent = `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`;
+    const setEl = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    };
+
+    setEl("checkoutRef", booking.ref_id);
+    setEl("bankName", bankDetails.bank_name);
+    setEl("bankAccountName", bankDetails.account_name);
+    setEl("bankAccountNumber", bankDetails.account_number);
+    setEl("checkoutTotal", `₦${(booking.total_cost || 0).toLocaleString()}`);
+    setEl(
+      "checkoutInstructions",
+      `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`
+    );
   }
 
   function wireCheckout() {
@@ -448,8 +457,10 @@
       };
 
       const submitBtn = form.querySelector("button[type=submit]");
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Sending…";
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Sending…";
+      }
 
       try {
         const res = await fetch("/support/ticket", {
@@ -478,8 +489,10 @@
           errorEl.classList.add("active");
         }
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Send Message";
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Send Message";
+        }
       }
     });
   }
