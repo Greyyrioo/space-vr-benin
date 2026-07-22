@@ -116,8 +116,8 @@ FUEL_BAR_MENU = {
 
 BANK_DETAILS = {
     "bank_name": "OPay",
-    "account_name": "SpaceVR Benin",
-    "account_number": "8146497579",
+    "account_name": "Gabriel Osaghae",
+    "account_number": "8167059132",
     "reference_note": "Use your SVR booking reference as the transfer narration/description.",
 }
 
