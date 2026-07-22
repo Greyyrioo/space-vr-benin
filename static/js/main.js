@@ -79,7 +79,7 @@
       fuelContainerEl.style.display = "none";
       fuelContainerEl.innerHTML = "";
       gameListEl.style.display = "grid";
-      gameListEl.innerHTML = zone.games
+      gameListEl.innerHTML = (zone.games || [])
         .map(
           (g) =>
             `<li style="cursor: pointer;" onclick="selectGameAndBook('${zoneId}', '${escapeHtml(
@@ -128,7 +128,7 @@
   };
 
   function renderFuelMenu(container) {
-    const menu = DATA.fuelBarMenu;
+    const menu = DATA.fuelBarMenu || {};
     const rows = Object.keys(menu)
       .map((itemId) => {
         const item = menu[itemId];
@@ -137,7 +137,7 @@
           <div class="fuel-item" data-item-id="${itemId}">
             <div class="fuel-item-info">
               <div class="fuel-name">${escapeHtml(item.name)}</div>
-              <div class="fuel-price">₦${item.price.toFixed(2)} each</div>
+              <div class="fuel-price">₦${(item.price || 0).toLocaleString()} each</div>
             </div>
             <div class="qty-control">
               <button type="button" class="qty-btn" data-action="dec">−</button>
@@ -183,15 +183,15 @@
   function updateFuelSubtotal() {
     const subtotalEl = document.getElementById("fuelSubtotal");
     if (!subtotalEl) return;
-    subtotalEl.textContent = `₦${getDrinksTotal().toFixed(2)}`;
+    subtotalEl.textContent = `₦${getDrinksTotal().toLocaleString()}`;
   }
 
   function getDrinksTotal() {
     let total = 0;
     Object.keys(bookingState.drinks).forEach((itemId) => {
       const qty = bookingState.drinks[itemId];
-      const item = DATA.fuelBarMenu[itemId];
-      if (item) total += item.price * qty;
+      const item = (DATA.fuelBarMenu && DATA.fuelBarMenu[itemId]) || null;
+      if (item) total += (item.price || 0) * qty;
     });
     return total;
   }
@@ -243,7 +243,7 @@
       .map((itemId) => {
         const item = DATA.fuelBarMenu[itemId];
         const qty = bookingState.drinks[itemId];
-        return `<div>${qty} × <span>${escapeHtml(item.name)}</span></div>`;
+        return `<div>${qty} × <span>${escapeHtml(item ? item.name : itemId)}</span></div>`;
       })
       .join("");
     el.innerHTML = `<strong>Fuel Bar items added:</strong>${lines}`;
@@ -276,10 +276,16 @@
     if (!zoneSelect || !durationSelect) return;
 
     const zoneId = zoneSelect.value;
-    const durationMin = parseInt(durationSelect.value, 10) || 0;
-    const zone = zoneId ? DATA.zones[zoneId] : null;
+    const durationValue = durationSelect.value.replace(/[^0-9]/g, '');
+    const gameCount = parseInt(durationValue, 10) || 1;
 
-    const zoneCost = zone ? (zone.price_per_game || 3000) * durationMin : 0;
+    // Look up zone object directly or attempt a fallback match
+    const zone = DATA.zones[zoneId] || Object.values(DATA.zones || {}).find(z => z.name === zoneId);
+
+    // Extract base price per game/session using accurate fallback pricing
+    const basePrice = zone ? (zone.price_per_game || zone.price || 1000) : 1000;
+    const zoneCost = basePrice * gameCount;
+
     const drinksCost = getDrinksTotal();
     const total = zoneCost + drinksCost;
 
@@ -304,9 +310,17 @@
         errorEl.textContent = "";
       }
 
+      const rawZoneVal = document.getElementById("bookingZone").value;
+      const rawDurationVal = document.getElementById("bookingDuration").value;
+
+      // Extract clean zone key and game count
+      const zoneObj = DATA.zones[rawZoneVal] || Object.values(DATA.zones || {}).find(z => z.name === rawZoneVal);
+      const cleanZoneId = zoneObj ? (zoneObj.id || rawZoneVal) : rawZoneVal;
+      const cleanDuration = parseInt(rawDurationVal.replace(/[^0-9]/g, ''), 10) || 1;
+
       const payload = {
-        zone_id: document.getElementById("bookingZone").value,
-        duration_min: parseInt(document.getElementById("bookingDuration").value, 10),
+        zone_id: cleanZoneId,
+        duration_min: cleanDuration,
         session_date: document.getElementById("bookingDate").value,
         time_slot: document.getElementById("bookingTimeSlot").value,
         customer_name: document.getElementById("bookingName").value.trim(),
@@ -369,7 +383,7 @@
     document.getElementById("bankAccountName").textContent = bankDetails.account_name;
     document.getElementById("bankAccountNumber").textContent = bankDetails.account_number;
     document.getElementById("bankRoutingNumber").textContent = bankDetails.routing_number;
-    document.getElementById("checkoutTotal").textContent = `₦${booking.total_cost.toFixed(2)}`;
+    document.getElementById("checkoutTotal").textContent = `₦${(booking.total_cost || 0).toLocaleString()}`;
     document.getElementById(
       "checkoutInstructions"
     ).textContent = `Bring a screenshot of this receipt or your transfer confirmation to the office counter to activate your pod. Reference: ${booking.ref_id}.`;

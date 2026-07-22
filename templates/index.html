@@ -96,27 +96,27 @@
 
     <div class="gallery-grid">
       <div class="gallery-item">
-        <img src="/static/images/gallery1.jpg" alt="SpaceVRBenin VR combat zones" onerror="this.src='https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=800&auto=format&fit=crop'">
+        <img src="{{ url_for('static', filename='images/gallery1.jpg') }}" alt="SpaceVRBenin VR combat zones" onerror="this.src='https://images.unsplash.com/photo-1633613286991-611fe299c4be?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">VR Combat Zone</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery2.jpg" alt="SpaceVRBenin racing simulator rigs" onerror="this.src='https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop'">
+        <img src="{{ url_for('static', filename='images/gallery2.jpg') }}" alt="SpaceVRBenin racing simulator rigs" onerror="this.src='https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">Racing Simulators</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery3.jpg" alt="SpaceVRBenin PS5 hub" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop'">
+        <img src="{{ url_for('static', filename='images/gallery3.jpg') }}" alt="SpaceVRBenin PS5 hub" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">PlayStation 5 Hub</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery4.jpg" alt="SpaceVRBenin table tennis zone" onerror="this.src='https://images.unsplash.com/photo-1580327344181-c1163234e5a0?q=80&w=800&auto=format&fit=crop'">
+        <img src="{{ url_for('static', filename='images/gallery4.jpg') }}" alt="SpaceVRBenin table tennis zone" onerror="this.src='https://images.unsplash.com/photo-1580327344181-c1163234e5a0?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">Table Tennis Zone</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery5.jpg" alt="SpaceVRBenin drinks bar" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop'">
+        <img src="{{ url_for('static', filename='images/gallery5.jpg') }}" alt="SpaceVRBenin drinks bar" onerror="this.src='https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">Drinks Bar</div>
       </div>
       <div class="gallery-item">
-        <img src="/static/images/gallery6.jpg" alt="SpaceVRBenin front counter" onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop'">
+        <img src="{{ url_for('static', filename='images/gallery6.jpg') }}" alt="SpaceVRBenin front counter" onerror="this.src='https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop'">
         <div class="gallery-caption">Front Counter</div>
       </div>
     </div>
@@ -133,9 +133,9 @@
     <div class="testimonial-grid">
       <!-- Testimony 1: Miss Zee -->
       <div class="testimonial-card video-card">
-        <video controls playsinline poster="/static/images/testimonial-miss-zee.jpg" preload="metadata">
-          <source src="/static/videos/miss-zee.MOV" type="video/quicktime">
-          <source src="/static/videos/miss-zee.MOV" type="video/mp4">
+        <video controls playsinline poster="{{ url_for('static', filename='images/testimonial-miss-zee.jpg') }}" preload="metadata">
+          <source src="{{ url_for('static', filename='videos/miss-zee.MOV') }}" type="video/quicktime">
+          <source src="{{ url_for('static', filename='videos/miss-zee.MOV') }}" type="video/mp4">
           Your browser does not support video playback.
         </video>
         <div class="testimonial-info">
@@ -147,9 +147,9 @@
 
       <!-- Testimony 2: Miss Martha -->
       <div class="testimonial-card video-card">
-        <video controls playsinline poster="/static/images/testimonial-miss-martha.jpg" preload="metadata">
-          <source src="/static/videos/miss-martha.MOV" type="video/quicktime">
-          <source src="/static/videos/miss-martha.MOV" type="video/mp4">
+        <video controls playsinline poster="{{ url_for('static', filename='images/testimonial-miss-martha.jpg') }}" preload="metadata">
+          <source src="{{ url_for('static', filename='videos/miss-martha.MOV') }}" type="video/quicktime">
+          <source src="{{ url_for('static', filename='videos/miss-martha.MOV') }}" type="video/mp4">
           Your browser does not support video playback.
         </video>
         <div class="testimonial-info">
@@ -161,9 +161,9 @@
 
       <!-- Testimony 3: Squad -->
       <div class="testimonial-card video-card">
-        <video controls playsinline poster="/static/images/testimonial-squad.jpg" preload="metadata">
-          <source src="/static/videos/squad.MOV" type="video/quicktime">
-          <source src="/static/videos/squad.MOV" type="video/mp4">
+        <video controls playsinline poster="{{ url_for('static', filename='images/testimonial-squad.jpg') }}" preload="metadata">
+          <source src="{{ url_for('static', filename='videos/squad.MOV') }}" type="video/quicktime">
+          <source src="{{ url_for('static', filename='videos/squad.MOV') }}" type="video/mp4">
           Your browser does not support video playback.
         </video>
         <div class="testimonial-info">
@@ -175,9 +175,9 @@
 
       <!-- Testimony 4: Anonymous Couple -->
       <div class="testimonial-card video-card">
-        <video controls playsinline poster="/static/images/testimonial-couple.jpg" preload="metadata">
-          <source src="/static/videos/anonymous-couple.MOV" type="video/quicktime">
-          <source src="/static/videos/anonymous-couple.MOV" type="video/mp4">
+        <video controls playsinline poster="{{ url_for('static', filename='images/testimonial-couple.jpg') }}" preload="metadata">
+          <source src="{{ url_for('static', filename='videos/anonymous-couple.MOV') }}" type="video/quicktime">
+          <source src="{{ url_for('static', filename='videos/anonymous-couple.MOV') }}" type="video/mp4">
           Your browser does not support video playback.
         </video>
         <div class="testimonial-info">
@@ -274,11 +274,11 @@
         <div class="field">
             <label>Duration / Games</label>
             <select id="bookingDuration" required>
-                <option value="1">1 Game (₦3,000)</option>
-                <option value="2">2 Games (₦6,000)</option>
-                <option value="3">3 Games (₦9,000)</option>
-                <option value="4">4 Games (₦12,000)</option>
-                <option value="5">5 Games (₦15,000)</option>
+                <option value="1">1 Game</option>
+                <option value="2">2 Games</option>
+                <option value="3">3 Games</option>
+                <option value="4">4 Games</option>
+                <option value="5">5 Games</option>
             </select>
         </div>
 
@@ -293,7 +293,7 @@
             <option value="12:00 PM - 02:00 PM">12:00 PM – 02:00 PM</option>
             <option value="02:00 PM - 04:00 PM">02:00 PM – 04:00 PM</option>
             <option value="04:00 PM - 06:00 PM">04:00 PM – 06:00 PM</option>
-            <option value="06:00 PM - 08:00 PM">08:00 PM – 08:00 PM</option>
+            <option value="06:00 PM - 08:00 PM">06:00 PM – 08:00 PM</option>
             <option value="08:00 PM - 10:00 PM">08:00 PM – 10:00 PM</option>
           </select>
         </div>
@@ -305,9 +305,9 @@
       <div class="booking-drinks-list" id="bookingDrinksList"></div>
 
       <div class="cost-summary">
-        <div class="row"><span>Zone cost</span><span id="costZone">₦0.00</span></div>
-        <div class="row"><span>Drinks Bar items</span><span id="costDrinks">₦0.00</span></div>
-        <div class="row total"><span>Total</span><span id="costTotal">₦0.00</span></div>
+        <div class="row"><span>Zone cost</span><span id="summaryZoneCost">₦0.00</span></div>
+        <div class="row"><span>Drinks Bar items</span><span id="summaryDrinksCost">₦0.00</span></div>
+        <div class="row total"><span>Total</span><span id="summaryTotal">₦0.00</span></div>
       </div>
 
       <div class="form-error" id="bookingError"></div>

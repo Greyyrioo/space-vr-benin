@@ -84,15 +84,15 @@ ZONES = {
     "ps5-hub": {
         "name": "PlayStation 5 Hub",
         "tagline": "Couch co-op and competitive gaming on the big screen",
-        "price_per_game": 3000.00,
+        "price_per_game": 1000.00,
         "games": [
-            "FIFA 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "Elden Ring"
+            "EA SPORTS FC 26", "Mortal Kombat 1", "Marvel's Spider-Man 2", "Elden Ring"
         ],
     },
     "table-tennis": {
         "name": "Table Tennis Zone",
         "tagline": "Fast-paced table tennis action with friends",
-        "price_per_game": 3000.00,
+        "price_per_game": 1500.00,
         "games": ["Singles Match", "Doubles Showdown"],
     },
     "drinks-bar": {
@@ -328,7 +328,7 @@ We've received your SpaceVRBenin booking request. Here are the details:
 
 Reference:   {booking['ref_id']}
 Zone:        {booking['zone_name']}
-Duration:    {booking['duration_min']} minutes
+Games:       {booking['duration_min']}
 Date:        {booking['session_date']}
 Time slot:   {booking['time_slot']}
 
@@ -364,7 +364,7 @@ Reference:  {booking['ref_id']}
 Zone:       {booking['zone_name']}
 Date:       {booking['session_date']}
 Time slot:  {booking['time_slot']}
-Duration:   {booking['duration_min']} minutes
+Games:      {booking['duration_min']}
 
 Please arrive 10 minutes early with your reference code so we can get your
 station ready. See you soon!
@@ -450,7 +450,7 @@ def create_booking():
     if zone_id not in ZONES:
         errors.append("Please select a valid zone.")
     if duration_min not in DURATIONS_MIN:
-        errors.append("Please select a valid session duration.")
+        errors.append("Please select a valid number of games.")
     if not session_date:
         errors.append("Please select a session date.")
     if not time_slot:

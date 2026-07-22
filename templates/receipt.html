@@ -26,22 +26,31 @@
     <div class="receipt-row"><span class="label">Reference</span><span>{{ booking.ref_id }}</span></div>
     <div class="receipt-row"><span class="label">Customer</span><span>{{ booking.customer_name }}</span></div>
     <div class="receipt-row"><span class="label">Zone</span><span>{{ booking.zone_name }}</span></div>
-    <div class="receipt-row"><span class="label">Duration</span><span>{{ booking.duration_min }} minutes</span></div>
+    <div class="receipt-row">
+      <span class="label">Games / Session</span>
+      <span>
+        {% if booking.duration and booking.duration|int > 1 %}
+          {{ booking.duration }} Games
+        {% else %}
+          {{ booking.duration|default(1) }} Game
+        {% endif %}
+      </span>
+    </div>
     <div class="receipt-row"><span class="label">Date</span><span>{{ booking.session_date }}</span></div>
     <div class="receipt-row"><span class="label">Time Slot</span><span>{{ booking.time_slot }}</span></div>
 
     {% if booking.drinks and booking.drinks|length > 0 %}
     <div class="receipt-section-title">Drinks Bar Items</div>
     {% for d in booking.drinks %}
-    <div class="receipt-row"><span class="label">{{ d.qty }} × {{ d.name }}</span><span>₦{{ '{:,.2f}'.format(d.line_total) }}</span></div>
+    <div class="receipt-row"><span class="label">{{ d.qty }} × {{ d.name }}</span><span>₦{{ '{:,.2f}'.format(d.line_total|default(0)) }}</span></div>
     {% endfor %}
     {% endif %}
 
-    <div class="receipt-section-title">Payment</div>
-    <div class="receipt-row"><span class="label">Zone Cost</span><span>₦{{ '{:,.2f}'.format(booking.zone_cost) }}</span></div>
-    <div class="receipt-row"><span class="label">Drinks Bar Cost</span><span>₦{{ '{:,.2f}'.format(booking.drinks_cost) }}</span></div>
+    <div class="receipt-section-title">Payment Summary</div>
+    <div class="receipt-row"><span class="label">Zone Cost</span><span>₦{{ '{:,.2f}'.format(booking.zone_cost|default(0)) }}</span></div>
+    <div class="receipt-row"><span class="label">Drinks Bar Cost</span><span>₦{{ '{:,.2f}'.format(booking.drinks_cost|default(0)) }}</span></div>
 
-    <div class="receipt-total"><span>Total Due</span><span>₦{{ '{:,.2f}'.format(booking.total_cost) }}</span></div>
+    <div class="receipt-total"><span>Total Due</span><span>₦{{ '{:,.2f}'.format(booking.total_cost|default(0)) }}</span></div>
 
     <div class="receipt-note">
       Bring a screenshot of this receipt or your transfer confirmation to the
