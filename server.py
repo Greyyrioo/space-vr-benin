@@ -354,6 +354,27 @@ See you at SpaceVRBenin!
     send_email_safe(subject, [booking["email"]], body)
 
 
+def send_admin_booking_alert(booking):
+    admin_email = app.config.get("MAIL_USERNAME")
+    if not admin_email:
+        return
+    subject = f"🚨 NEW BOOKING RECEIPT: {booking['customer_name']} ({booking['ref_id']})"
+    body = f"""New booking received on SpaceVRBenin!
+
+Customer: {booking['customer_name']}
+Phone:    {booking['phone']}
+Email:    {booking['email']}
+Ref ID:   {booking['ref_id']}
+Zone:     {booking['zone_name']}
+Date:     {booking['session_date']} @ {booking['time_slot']}
+Total:    ₦{booking['total_cost']:,.2f}
+
+Log into the admin control center to manage this booking:
+{request.host_url}admin
+"""
+    send_email_safe(subject, [admin_email], body)
+
+
 def send_payment_confirmation_email(booking):
     subject = f"SpaceVRBenin Session Confirmed -- {booking['ref_id']}"
     body = f"""Hi {booking['customer_name']},
@@ -504,7 +525,9 @@ def create_booking():
     row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
     booking = row_to_booking_dict(row)
 
+    # Send emails
     send_booking_received_email(booking)
+    send_admin_booking_alert(booking)
 
     return jsonify({"success": True, "booking": booking, "bank_details": BANK_DETAILS})
 
@@ -592,8 +615,8 @@ def create_support_ticket():
 def admin_login():
     error = None
     if request.method == "POST":
-        username = request.form.get("username", "")
-        password = request.form.get("password", "")
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "").strip()
         if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
             session["is_admin"] = True
             session["admin_username"] = username

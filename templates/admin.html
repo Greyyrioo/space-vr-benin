@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SpaceVR Admin — Control Center</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
-<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpaceVR Admin -- Control Center</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}" />
 </head>
 <body class="admin-body">
 
@@ -27,7 +27,7 @@
     </nav>
 
     <div class="logout-link">
-      Signed in as {{ admin_username }} · <a href="{{ url_for('admin_logout') }}">Log out</a>
+      Signed in as {{ admin_username if admin_username else 'Admin' }} · <a href="{{ url_for('admin_logout') }}">Log out</a>
     </div>
   </aside>
 
@@ -40,11 +40,26 @@
     </div>
 
     <div class="stat-cards" id="statCards">
-      <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-value" id="statTotalBookings">0</div></div>
-      <div class="stat-card accent"><div class="stat-label">Confirmed Revenue</div><div class="stat-value" id="statRevenue">$0.00</div></div>
-      <div class="stat-card"><div class="stat-label">Awaiting Verification</div><div class="stat-value" id="statAwaiting">0</div></div>
-      <div class="stat-card"><div class="stat-label">Pending Payment</div><div class="stat-value" id="statPendingPayment">0</div></div>
-      <div class="stat-card"><div class="stat-label">Open Tickets</div><div class="stat-value" id="statOpenTickets">0</div></div>
+      <div class="stat-card">
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-value" id="statTotalBookings">0</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Confirmed Revenue</div>
+        <div class="stat-value" id="statRevenue">₦0.00</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Awaiting Verification</div>
+        <div class="stat-value" id="statAwaiting">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Payment</div>
+        <div class="stat-value" id="statPendingPayment">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Open Tickets</div>
+        <div class="stat-value" id="statOpenTickets">0</div>
+      </div>
     </div>
 
     <!-- OVERVIEW PANEL -->
