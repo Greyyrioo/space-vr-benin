@@ -17,6 +17,7 @@ import sqlite3
 import random
 import string
 import json
+import threading
 from datetime import datetime
 from functools import wraps
 
@@ -304,16 +305,29 @@ def stream_video(filename):
 
 
 # ---------------------------------------------------------------------------
-# Email routing functions
+# Email routing functions (Asynchronous with threading)
 # ---------------------------------------------------------------------------
 
+def send_async_email(app_obj, msg):
+    """Helper worker to send emails in a background thread."""
+    with app_obj.app_context():
+        try:
+            mail.send(msg)
+        except Exception as exc:
+            print(f"[MAIL ERROR] Background email dispatch failed: {exc}")
+
+
 def send_email_safe(subject, recipients, body_text, body_html=None):
+    """Schedules email delivery in a non-blocking background thread."""
+    if app.config.get("MAIL_SUPPRESS_SEND"):
+        print(f"[MAIL SKIPPED] No MAIL_USERNAME configured. Subject: {subject}")
+        return False
     try:
         msg = Message(subject=subject, recipients=recipients, body=body_text, html=body_html)
-        mail.send(msg)
+        threading.Thread(target=send_async_email, args=(app._get_current_object(), msg)).start()
         return True
     except Exception as exc:
-        print(f"[MAIL ERROR] Could not send '{subject}' to {recipients}: {exc}")
+        print(f"[MAIL ERROR] Could not spawn thread for '{subject}': {exc}")
         return False
 
 
@@ -354,7 +368,7 @@ See you at SpaceVRBenin!
     send_email_safe(subject, [booking["email"]], body)
 
 
-def send_admin_booking_alert(booking):
+def send_admin_booking_alert(booking, host_url):
     admin_email = app.config.get("MAIL_USERNAME")
     if not admin_email:
         return
@@ -370,7 +384,7 @@ Date:     {booking['session_date']} @ {booking['time_slot']}
 Total:    ₦{booking['total_cost']:,.2f}
 
 Log into the admin control center to manage this booking:
-{request.host_url}admin
+{host_url}admin
 """
     send_email_safe(subject, [admin_email], body)
 
@@ -525,9 +539,9 @@ def create_booking():
     row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
     booking = row_to_booking_dict(row)
 
-    # Send emails
+    # Send emails in background
     send_booking_received_email(booking)
-    send_admin_booking_alert(booking)
+    send_admin_booking_alert(booking, request.host_url)
 
     return jsonify({"success": True, "booking": booking, "bank_details": BANK_DETAILS})
 
