@@ -1,14 +1,11 @@
 """
-SpaceVRBenin -- Premium Gaming Center
-Full-stack Flask application: public booking site + private admin control center.
+SpaceVRBenin -- Premium Gaming Center API
+Decoupled Flask REST Backend for React Frontend Integration.
 
 Run:
     pip install -r requirements.txt
-    cp .env.example .env      # fill in your SMTP + admin credentials
+    cp .env.example .env
     python server.py
-
-The app will be available at http://127.0.0.1:5000
-Admin dashboard:            http://127.0.0.1:5000/admin
 """
 
 import os
@@ -21,10 +18,8 @@ import threading
 from datetime import datetime
 from functools import wraps
 
-from flask import (
-    Flask, render_template, request, jsonify, redirect,
-    url_for, session, g, flash, send_file, Response
-)
+from flask import Flask, request, jsonify, g, Response, send_file, session
+from flask_cors import CORS
 from flask_mail import Mail, Message
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
@@ -32,7 +27,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# App configuration
+# App & CORS configuration
 # ---------------------------------------------------------------------------
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -40,6 +35,9 @@ DATABASE = os.path.join(BASE_DIR, "spacevr.db")
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "spacevr-dev-secret-change-me")
+
+# Allow requests from React frontend
+CORS(app, supports_credentials=True)
 
 # --- Mail configuration (Flask-Mail / SMTP) ---
 app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER", "smtp.gmail.com")
@@ -187,11 +185,10 @@ def init_db():
     db.close()
 
 
-# Ensure database tables exist on startup
 init_db()
 
 # ---------------------------------------------------------------------------
-# Small utilities
+# Utilities
 # ---------------------------------------------------------------------------
 
 def generate_ref_id():
@@ -256,7 +253,7 @@ def row_to_ticket_dict(row):
 
 
 # ---------------------------------------------------------------------------
-# Video Streaming Route (HTTP 206 Range Requests for Safari/iOS)
+# Video Streaming Route
 # ---------------------------------------------------------------------------
 
 @app.route("/static/videos/<path:filename>")
@@ -266,7 +263,7 @@ def stream_video(filename):
     file_path = os.path.join(video_dir, filename)
 
     if not os.path.isfile(file_path):
-        return "Video not found", 404
+        return jsonify({"error": "Video not found"}), 404
 
     file_size = os.path.getsize(file_path)
     range_header = request.headers.get("Range", None)
@@ -305,11 +302,10 @@ def stream_video(filename):
 
 
 # ---------------------------------------------------------------------------
-# Email routing functions (Asynchronous with threading)
+# Asynchronous Mail Delivery
 # ---------------------------------------------------------------------------
 
 def send_async_email(app_obj, msg):
-    """Helper worker to send emails in a background thread."""
     with app_obj.app_context():
         try:
             mail.send(msg)
@@ -318,7 +314,6 @@ def send_async_email(app_obj, msg):
 
 
 def send_email_safe(subject, recipients, body_text, body_html=None):
-    """Schedules email delivery in a non-blocking background thread."""
     if app.config.get("MAIL_SUPPRESS_SEND"):
         print(f"[MAIL SKIPPED] No MAIL_USERNAME configured. Subject: {subject}")
         return False
@@ -431,38 +426,37 @@ message through our website.
 
 
 # ---------------------------------------------------------------------------
-# Auth decorator for admin routes
+# Auth decorator for API routes
 # ---------------------------------------------------------------------------
 
 def admin_required(view_func):
     @wraps(view_func)
     def wrapped(*args, **kwargs):
-        if not session.get("is_admin"):
-            return redirect(url_for("admin_login", next=request.path))
-        return view_func(*args, **kwargs)
+        # Allow either Session Auth or Custom Authorization Header for React SPA
+        auth_header = request.headers.get("Authorization")
+        if session.get("is_admin") or auth_header == "Bearer spacevr-admin-token":
+            return view_func(*args, **kwargs)
+        return jsonify({"success": False, "error": "Unauthorized access."}), 401
     return wrapped
 
 
 # ---------------------------------------------------------------------------
-# Public routes
+# Public REST API Endpoints
 # ---------------------------------------------------------------------------
 
-@app.route("/")
-def home():
-    return render_template(
-        "index.html",
-        zones=ZONES,
-        fuel_bar_menu=FUEL_BAR_MENU,
-        durations=DURATIONS_MIN,
-    )
+@app.route("/api/config", methods=["GET"])
+def get_config():
+    """Provides initial business configuration to the React frontend."""
+    return jsonify({
+        "success": True,
+        "zones": ZONES,
+        "fuel_bar_menu": FUEL_BAR_MENU,
+        "durations": DURATIONS_MIN,
+        "bank_details": BANK_DETAILS,
+    })
 
 
-@app.route("/api/zones")
-def api_zones():
-    return jsonify({"zones": ZONES, "fuel_bar_menu": FUEL_BAR_MENU, "durations": DURATIONS_MIN})
-
-
-@app.route("/book", methods=["POST"])
+@app.route("/api/book", methods=["POST"])
 def create_booking():
     data = request.get_json(force=True, silent=True) or {}
 
@@ -539,14 +533,23 @@ def create_booking():
     row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
     booking = row_to_booking_dict(row)
 
-    # Send emails in background
+    # Dispatch background emails
     send_booking_received_email(booking)
     send_admin_booking_alert(booking, request.host_url)
 
     return jsonify({"success": True, "booking": booking, "bank_details": BANK_DETAILS})
 
 
-@app.route("/book/<ref_id>/mark-paid", methods=["POST"])
+@app.route("/api/receipt/<ref_id>", methods=["GET"])
+def api_receipt(ref_id):
+    db = get_db()
+    row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
+    if not row:
+        return jsonify({"success": False, "error": "Booking not found."}), 404
+    return jsonify({"success": True, "booking": row_to_booking_dict(row), "bank_details": BANK_DETAILS})
+
+
+@app.route("/api/receipt/<ref_id>/mark-paid", methods=["POST"])
 def mark_booking_paid(ref_id):
     db = get_db()
     row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
@@ -565,26 +568,7 @@ def mark_booking_paid(ref_id):
     return jsonify({"success": True, "booking": booking})
 
 
-@app.route("/receipt/<ref_id>")
-def receipt(ref_id):
-    db = get_db()
-    row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
-    if not row:
-        return render_template("receipt.html", booking=None, bank_details=BANK_DETAILS), 404
-    booking = row_to_booking_dict(row)
-    return render_template("receipt.html", booking=booking, bank_details=BANK_DETAILS)
-
-
-@app.route("/api/receipt/<ref_id>")
-def api_receipt(ref_id):
-    db = get_db()
-    row = db.execute("SELECT * FROM bookings WHERE ref_id = ?", (ref_id,)).fetchone()
-    if not row:
-        return jsonify({"success": False, "error": "Booking not found."}), 404
-    return jsonify({"success": True, "booking": row_to_booking_dict(row), "bank_details": BANK_DETAILS})
-
-
-@app.route("/support/ticket", methods=["POST"])
+@app.route("/api/support/ticket", methods=["POST"])
 def create_support_ticket():
     data = request.get_json(force=True, silent=True) or {}
 
@@ -622,42 +606,35 @@ def create_support_ticket():
 
 
 # ---------------------------------------------------------------------------
-# Admin auth routes
+# Admin API Routes
 # ---------------------------------------------------------------------------
 
-@app.route("/admin/login", methods=["GET", "POST"])
+@app.route("/api/admin/login", methods=["POST"])
 def admin_login():
-    error = None
-    if request.method == "POST":
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "").strip()
-        if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
-            session["is_admin"] = True
-            session["admin_username"] = username
-            next_url = request.args.get("next") or url_for("admin_dashboard")
-            return redirect(next_url)
-        error = "Invalid username or password."
-    return render_template("admin_login.html", error=error)
+    data = request.get_json(force=True, silent=True) or {}
+    username = (data.get("username") or "").strip()
+    password = (data.get("password") or "").strip()
+
+    if username == ADMIN_USERNAME and check_password_hash(ADMIN_PASSWORD_HASH, password):
+        session["is_admin"] = True
+        session["admin_username"] = username
+        return jsonify({
+            "success": True,
+            "token": "spacevr-admin-token",
+            "username": username
+        })
+
+    return jsonify({"success": False, "error": "Invalid username or password."}), 401
 
 
-@app.route("/admin/logout")
+@app.route("/api/admin/logout", methods=["POST"])
 def admin_logout():
     session.pop("is_admin", None)
     session.pop("admin_username", None)
-    return redirect(url_for("admin_login"))
+    return jsonify({"success": True, "message": "Logged out successfully."})
 
 
-# ---------------------------------------------------------------------------
-# Admin dashboard routes
-# ---------------------------------------------------------------------------
-
-@app.route("/admin")
-@admin_required
-def admin_dashboard():
-    return render_template("admin.html", admin_username=session.get("admin_username"))
-
-
-@app.route("/admin/api/bookings")
+@app.route("/api/admin/bookings", methods=["GET"])
 @admin_required
 def admin_api_bookings():
     db = get_db()
@@ -670,6 +647,7 @@ def admin_api_bookings():
     confirmed = sum(1 for b in bookings if b["status"] == "confirmed")
 
     return jsonify({
+        "success": True,
         "bookings": bookings,
         "stats": {
             "total_bookings": len(bookings),
@@ -681,7 +659,7 @@ def admin_api_bookings():
     })
 
 
-@app.route("/admin/api/bookings/<ref_id>/confirm", methods=["POST"])
+@app.route("/api/admin/bookings/<ref_id>/confirm", methods=["POST"])
 @admin_required
 def admin_confirm_booking(ref_id):
     db = get_db()
@@ -697,7 +675,7 @@ def admin_confirm_booking(ref_id):
     return jsonify({"success": True, "booking": booking})
 
 
-@app.route("/admin/api/bookings/<ref_id>/cancel", methods=["POST"])
+@app.route("/api/admin/bookings/<ref_id>/cancel", methods=["POST"])
 @admin_required
 def admin_cancel_booking(ref_id):
     db = get_db()
@@ -711,17 +689,17 @@ def admin_cancel_booking(ref_id):
     return jsonify({"success": True, "booking": row_to_booking_dict(row)})
 
 
-@app.route("/admin/api/tickets")
+@app.route("/api/admin/tickets", methods=["GET"])
 @admin_required
 def admin_api_tickets():
     db = get_db()
     rows = db.execute("SELECT * FROM tickets ORDER BY created_at DESC").fetchall()
     tickets = [row_to_ticket_dict(r) for r in rows]
     open_count = sum(1 for t in tickets if t["status"] == "open")
-    return jsonify({"tickets": tickets, "open_count": open_count})
+    return jsonify({"success": True, "tickets": tickets, "open_count": open_count})
 
 
-@app.route("/admin/api/tickets/<int:ticket_id>/reply", methods=["POST"])
+@app.route("/api/admin/tickets/<int:ticket_id>/reply", methods=["POST"])
 @admin_required
 def admin_reply_ticket(ticket_id):
     data = request.get_json(force=True, silent=True) or {}
